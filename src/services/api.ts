@@ -266,3 +266,4 @@ export interface OccupancyAnalytics {
 }
 
 export const api = new ApiService()
+export type { User, Unit, Customer, Metric, DashboardData, UnitStats, CustomerStats, RevenueAnalytics, OccupancyAnalytics }
