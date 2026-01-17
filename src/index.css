@@ -122,8 +122,14 @@ body {
   .bg-destructive {
     background-color: hsl(var(--destructive));
   }
+  .text-destructive {
+    color: hsl(var(--destructive));
+  }
   .text-destructive-foreground {
     color: hsl(var(--destructive-foreground));
+  }
+  .border-destructive\/50 {
+    border-color: hsl(var(--destructive) / 0.5);
   }
   .border-border {
     border-color: hsl(var(--border));
@@ -132,6 +138,12 @@ body {
     border-color: hsl(var(--input));
   }
   .ring-ring {
+    --tw-ring-color: hsl(var(--ring));
+  }
+  .ring-offset-background {
+    --tw-ring-offset-color: hsl(var(--background));
+  }
+  .focus-visible\:ring-ring:focus-visible {
     --tw-ring-color: hsl(var(--ring));
   }
   .stroke-border {
