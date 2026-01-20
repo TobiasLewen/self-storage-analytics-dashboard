@@ -14,7 +14,7 @@ import { PageErrorState } from '@/components/ui/error-state'
 import { useUnitMetrics } from '@/hooks/useUnits'
 import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency, formatPercent } from '@/lib/utils'
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react'
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Minus, CheckCircle2, AlertCircle, XCircle } from 'lucide-react'
 
 const COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
 
@@ -219,17 +219,27 @@ export function UnitPerformance() {
                     <TableCell className="text-right">{item.totalUnits}</TableCell>
                     <TableCell className="text-right">{item.occupiedUnits}</TableCell>
                     <TableCell className="text-right">
-                      <span
-                        className={
-                          item.occupancyRate >= 85
-                            ? 'text-green-600'
-                            : item.occupancyRate >= 70
-                            ? 'text-yellow-600'
-                            : 'text-red-600'
-                        }
-                      >
-                        {formatPercent(item.occupancyRate)}
-                      </span>
+                      <div className="flex items-center justify-end gap-1">
+                        {/* Icons for colorblind accessibility */}
+                        {item.occupancyRate >= 85 ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600" aria-hidden="true" />
+                        ) : item.occupancyRate >= 70 ? (
+                          <AlertCircle className="h-4 w-4 text-yellow-600" aria-hidden="true" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-red-600" aria-hidden="true" />
+                        )}
+                        <span
+                          className={
+                            item.occupancyRate >= 85
+                              ? 'text-green-600'
+                              : item.occupancyRate >= 70
+                              ? 'text-yellow-600'
+                              : 'text-red-600'
+                          }
+                        >
+                          {formatPercent(item.occupancyRate)}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       {formatCurrency(item.avgPrice)}

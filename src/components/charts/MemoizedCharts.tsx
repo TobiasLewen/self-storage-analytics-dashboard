@@ -56,6 +56,10 @@ interface MemoizedLineChartProps {
   showLegend?: boolean
   legendFormatter?: (value: string) => string
   referenceLine?: { y: number; stroke: string; strokeDasharray?: string }
+  /** Accessible label describing the chart for screen readers */
+  ariaLabel?: string
+  /** Detailed description of the chart content */
+  ariaDescription?: string
 }
 
 export const MemoizedLineChart = memo(function MemoizedLineChart({
@@ -69,9 +73,19 @@ export const MemoizedLineChart = memo(function MemoizedLineChart({
   showLegend = false,
   legendFormatter,
   referenceLine,
+  ariaLabel,
+  ariaDescription,
 }: MemoizedLineChartProps) {
   return (
-    <div style={{ height }}>
+    <div
+      style={{ height }}
+      role="img"
+      aria-label={ariaLabel}
+      aria-describedby={ariaDescription ? 'chart-desc' : undefined}
+    >
+      {ariaDescription && (
+        <p id="chart-desc" className="sr-only">{ariaDescription}</p>
+      )}
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -140,6 +154,10 @@ interface MemoizedBarChartProps {
   tooltipFormatter?: (value: number, name: string) => [string, string]
   showLegend?: boolean
   cellColors?: string[]
+  /** Accessible label describing the chart for screen readers */
+  ariaLabel?: string
+  /** Detailed description of the chart content */
+  ariaDescription?: string
 }
 
 export const MemoizedBarChart = memo(function MemoizedBarChart({
@@ -154,9 +172,19 @@ export const MemoizedBarChart = memo(function MemoizedBarChart({
   tooltipFormatter,
   showLegend = false,
   cellColors,
+  ariaLabel,
+  ariaDescription,
 }: MemoizedBarChartProps) {
   return (
-    <div style={{ height }}>
+    <div
+      style={{ height }}
+      role="img"
+      aria-label={ariaLabel}
+      aria-describedby={ariaDescription ? 'bar-chart-desc' : undefined}
+    >
+      {ariaDescription && (
+        <p id="bar-chart-desc" className="sr-only">{ariaDescription}</p>
+      )}
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout={layout}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -237,6 +265,10 @@ interface MemoizedAreaChartProps {
     strokeDasharray?: string
     label?: { value: string; position: string; fill: string }
   }
+  /** Accessible label describing the chart for screen readers */
+  ariaLabel?: string
+  /** Detailed description of the chart content */
+  ariaDescription?: string
 }
 
 export const MemoizedAreaChart = memo(function MemoizedAreaChart({
@@ -250,9 +282,19 @@ export const MemoizedAreaChart = memo(function MemoizedAreaChart({
   showLegend = false,
   legendFormatter,
   referenceLine,
+  ariaLabel,
+  ariaDescription,
 }: MemoizedAreaChartProps) {
   return (
-    <div style={{ height }}>
+    <div
+      style={{ height }}
+      role="img"
+      aria-label={ariaLabel}
+      aria-describedby={ariaDescription ? 'area-chart-desc' : undefined}
+    >
+      {ariaDescription && (
+        <p id="area-chart-desc" className="sr-only">{ariaDescription}</p>
+      )}
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -314,6 +356,10 @@ interface MemoizedPieChartProps {
   colors: string[]
   labelFormatter?: (entry: { name: string; percent?: number }) => string
   tooltipFormatter?: (value: number) => [string, string]
+  /** Accessible label describing the chart for screen readers */
+  ariaLabel?: string
+  /** Detailed description of the chart content */
+  ariaDescription?: string
 }
 
 export const MemoizedPieChart = memo(function MemoizedPieChart({
@@ -327,9 +373,19 @@ export const MemoizedPieChart = memo(function MemoizedPieChart({
   colors,
   labelFormatter,
   tooltipFormatter,
+  ariaLabel,
+  ariaDescription,
 }: MemoizedPieChartProps) {
   return (
-    <div style={{ height }}>
+    <div
+      style={{ height }}
+      role="img"
+      aria-label={ariaLabel}
+      aria-describedby={ariaDescription ? 'pie-chart-desc' : undefined}
+    >
+      {ariaDescription && (
+        <p id="pie-chart-desc" className="sr-only">{ariaDescription}</p>
+      )}
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie

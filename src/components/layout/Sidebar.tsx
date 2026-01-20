@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
@@ -23,6 +24,18 @@ const navigation = [
 ]
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  // Handle Escape key to close sidebar on mobile
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose()
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isOpen, onClose])
+
   return (
     <>
       {/* Mobile overlay */}
@@ -30,6 +43,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
 
@@ -66,7 +80,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 onClick={onClose}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                     isActive
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
