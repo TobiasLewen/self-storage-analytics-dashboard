@@ -79,6 +79,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                   {pageResults.map((result) => (
                     <CommandItem
                       key={result.id}
+                      value={result.title}
                       onSelect={() => handleSelect(result.action)}
                       className="cursor-pointer"
                     >
@@ -104,6 +105,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                   {customerResults.map((result) => (
                     <CommandItem
                       key={result.id}
+                      value={result.title}
                       onSelect={() => handleSelect(result.action)}
                       className="cursor-pointer"
                     >
@@ -126,6 +128,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                 {unitResults.map((result) => (
                   <CommandItem
                     key={result.id}
+                    value={result.title}
                     onSelect={() => handleSelect(result.action)}
                     className="cursor-pointer"
                   >
