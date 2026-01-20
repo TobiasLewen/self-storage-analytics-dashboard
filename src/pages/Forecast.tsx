@@ -1,4 +1,3 @@
-import { useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedAreaChart, MemoizedLineChart } from '@/components/charts/MemoizedCharts'
 import { AlertCard } from '@/components/cards/AlertCard'
@@ -11,6 +10,49 @@ import { useUnitMetrics } from '@/hooks/useUnits'
 import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency } from '@/lib/utils'
 import { TrendingUp, Calendar, AlertCircle, Lightbulb } from 'lucide-react'
+
+// Chart configurations - defined outside component to avoid recreating on each render
+const FORECAST_AREA_CONFIG = [
+  { dataKey: 'upperBound', stroke: 'none' as const, fill: 'hsl(var(--primary))', fillOpacity: 0.1 },
+  { dataKey: 'lowerBound', stroke: 'none' as const, fill: 'hsl(var(--background))', fillOpacity: 1 },
+]
+
+const FORECAST_LINE_CONFIG = [
+  { dataKey: 'actual', stroke: 'hsl(var(--primary))', dot: { fill: 'hsl(var(--primary))' } },
+  { dataKey: 'forecast', stroke: '#22c55e', strokeDasharray: '5 5', dot: { fill: '#22c55e' } },
+]
+
+const SEASONAL_LINE_CONFIG = [{
+  dataKey: 'seasonalIndex',
+  name: 'Saisonindex',
+  stroke: '#8b5cf6',
+  dot: { fill: '#8b5cf6' },
+}]
+
+const SEASONAL_REFERENCE_LINE = {
+  y: 1,
+  stroke: 'hsl(var(--muted-foreground))',
+  strokeDasharray: '3 3',
+}
+
+const FORECAST_LABELS: Record<string, string> = {
+  actual: 'Ist-Umsatz',
+  forecast: 'Prognose',
+  upperBound: 'Obere Grenze',
+  lowerBound: 'Untere Grenze',
+}
+
+const forecastYAxisFormatter = (value: number) => `${(value / 1000).toFixed(0)}k`
+
+const forecastTooltipFormatter = (value: number, name: string) =>
+  [formatCurrency(value), FORECAST_LABELS[name] || name] as [string, string]
+
+const forecastLegendFormatter = (value: string) => FORECAST_LABELS[value] || value
+
+const seasonalYAxisFormatter = (value: number) => `${(value * 100).toFixed(0)}%`
+
+const seasonalTooltipFormatter = (value: number) =>
+  [`${(value * 100).toFixed(1)}%`, 'Saisonindex'] as [string, string]
 
 function ForecastSkeleton() {
   return (
@@ -140,74 +182,15 @@ export function Forecast() {
   const totalForecast = forecastOnly.reduce((sum, d) => sum + (d.forecast || 0), 0)
 
   // Find forecast start month for reference line
-  const forecastStartMonth = useMemo(() =>
-    forecastData.find((d) => d.forecast)?.month,
-    [forecastData]
-  )
+  const forecastStartMonth = forecastData.find((d) => d.forecast)?.month
 
-  // Memoize chart configurations
-  const forecastAreaConfig = useMemo(() => [
-    { dataKey: 'upperBound', stroke: 'none' as const, fill: 'hsl(var(--primary))', fillOpacity: 0.1 },
-    { dataKey: 'lowerBound', stroke: 'none' as const, fill: 'hsl(var(--background))', fillOpacity: 1 },
-  ], [])
-
-  const forecastLineConfig = useMemo(() => [
-    { dataKey: 'actual', stroke: 'hsl(var(--primary))', dot: { fill: 'hsl(var(--primary))' } },
-    { dataKey: 'forecast', stroke: '#22c55e', strokeDasharray: '5 5', dot: { fill: '#22c55e' } },
-  ], [])
-
-  const forecastReferenceLine = useMemo(() => ({
+  // Reference line depends on data, so computed inline
+  const forecastReferenceLine = {
     x: forecastStartMonth,
     stroke: 'hsl(var(--muted-foreground))',
     strokeDasharray: '5 5',
     label: { value: 'Prognose Start', position: 'top', fill: 'hsl(var(--muted-foreground))' },
-  }), [forecastStartMonth])
-
-  const forecastYAxisFormatter = useCallback(
-    (value: number) => `${(value / 1000).toFixed(0)}k`,
-    []
-  )
-
-  const forecastLabels: Record<string, string> = {
-    actual: 'Ist-Umsatz',
-    forecast: 'Prognose',
-    upperBound: 'Obere Grenze',
-    lowerBound: 'Untere Grenze',
   }
-
-  const forecastTooltipFormatter = useCallback(
-    (value: number, name: string) =>
-      [formatCurrency(value), forecastLabels[name] || name] as [string, string],
-    []
-  )
-
-  const forecastLegendFormatter = useCallback(
-    (value: string) => forecastLabels[value] || value,
-    []
-  )
-
-  const seasonalLineConfig = useMemo(() => [{
-    dataKey: 'seasonalIndex',
-    name: 'Saisonindex',
-    stroke: '#8b5cf6',
-    dot: { fill: '#8b5cf6' },
-  }], [])
-
-  const seasonalReferenceLine = useMemo(() => ({
-    y: 1,
-    stroke: 'hsl(var(--muted-foreground))',
-    strokeDasharray: '3 3',
-  }), [])
-
-  const seasonalYAxisFormatter = useCallback(
-    (value: number) => `${(value * 100).toFixed(0)}%`,
-    []
-  )
-
-  const seasonalTooltipFormatter = useCallback(
-    (value: number) => [`${(value * 100).toFixed(1)}%`, 'Saisonindex'] as [string, string],
-    []
-  )
 
   return (
     <div className="space-y-6">
@@ -267,8 +250,8 @@ export function Forecast() {
         <CardContent>
           <MemoizedAreaChart
             data={forecastData}
-            areas={forecastAreaConfig}
-            lines={forecastLineConfig}
+            areas={FORECAST_AREA_CONFIG}
+            lines={FORECAST_LINE_CONFIG}
             xAxisKey="month"
             height={350}
             yAxisFormatter={forecastYAxisFormatter}
@@ -326,13 +309,13 @@ export function Forecast() {
           <CardContent>
             <MemoizedLineChart
               data={seasonalData}
-              lines={seasonalLineConfig}
+              lines={SEASONAL_LINE_CONFIG}
               xAxisKey="month"
               height={280}
               yAxisDomain={[0.85, 1.15]}
               yAxisFormatter={seasonalYAxisFormatter}
               tooltipFormatter={seasonalTooltipFormatter}
-              referenceLine={seasonalReferenceLine}
+              referenceLine={SEASONAL_REFERENCE_LINE}
             />
           </CardContent>
         </Card>

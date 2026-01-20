@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedLineChart, MemoizedBarChart } from '@/components/charts/MemoizedCharts'
