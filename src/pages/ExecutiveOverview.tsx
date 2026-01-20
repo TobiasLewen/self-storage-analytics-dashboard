@@ -65,19 +65,55 @@ export function ExecutiveOverview() {
     refetchMetrics()
   }
 
+  // Show loading state while any data is being fetched
   if (isLoading) {
     return <ExecutiveOverviewSkeleton />
   }
 
-  if (error || !summary || !unitSizeData || !monthlyData) {
+  // Check for errors and provide specific error messages
+  if (error) {
+    const errorMessages = []
+    if (summaryError) errorMessages.push(`Summary: ${summaryError.message}`)
+    if (unitsError) errorMessages.push(`Units: ${unitsError.message}`)
+    if (metricsError) errorMessages.push(`Metrics: ${metricsError.message}`)
+    
+    console.error('Executive overview error:', errorMessages.join(', '))
+    
     return (
       <PageErrorState
         title="Failed to load dashboard"
-        message={error?.message || 'Unable to load dashboard data. Please try again.'}
+        message={errorMessages.join(' | ') || 'Unable to load dashboard data. Please try again.'}
         onRetry={retry}
       />
     )
   }
+
+  // Validate that all required data is present and not empty
+  const hasSummary = summary !== undefined
+  const hasUnitSizeData = unitSizeData && unitSizeData.length > 0
+  const hasMonthlyData = monthlyData && monthlyData.length > 0
+
+  if (!hasSummary || !hasUnitSizeData || !hasMonthlyData) {
+    const missingData = []
+    if (!hasSummary) missingData.push('Dashboard summary')
+    if (!hasUnitSizeData) missingData.push('Unit size data')
+    if (!hasMonthlyData) missingData.push('Monthly metrics')
+    
+    console.error('Executive overview missing data:', missingData.join(', '))
+    
+    return (
+      <PageErrorState
+        title="Failed to load dashboard"
+        message={`Missing required data: ${missingData.join(', ')}. Please try again.`}
+        onRetry={retry}
+      />
+    )
+  }
+
+  // At this point, all data is guaranteed to be present
+  const safeSummary = summary!
+  const safeUnitSizeData = unitSizeData!
+  const safeMonthlyData = monthlyData!
 
   return (
     <div className="space-y-6">
@@ -85,27 +121,27 @@ export function ExecutiveOverview() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
           title="Belegungsrate"
-          value={formatPercent(summary.totalOccupancyRate)}
+          value={formatPercent(safeSummary.totalOccupancyRate)}
           icon={Percent}
           iconColor="text-blue-500"
         />
         <KPICard
           title="Monatlicher Umsatz"
-          value={formatCurrency(summary.monthlyRevenue)}
-          change={summary.revenueChangePercent}
+          value={formatCurrency(safeSummary.monthlyRevenue)}
+          change={safeSummary.revenueChangePercent}
           changeLabel="vs. Vormonat"
           icon={Euro}
           iconColor="text-green-500"
         />
         <KPICard
           title="Verfügbare Einheiten"
-          value={`${summary.availableUnits} / ${summary.totalUnits}`}
+          value={`${safeSummary.availableUnits} / ${safeSummary.totalUnits}`}
           icon={Box}
           iconColor="text-orange-500"
         />
         <KPICard
           title="Ø Mietdauer"
-          value={`${summary.avgRentalDuration} Monate`}
+          value={`${safeSummary.avgRentalDuration} Monate`}
           icon={Clock}
           iconColor="text-purple-500"
         />
@@ -120,7 +156,7 @@ export function ExecutiveOverview() {
           </CardHeader>
           <CardContent>
             <MemoizedLineChart
-              data={monthlyData}
+              data={safeMonthlyData}
               lines={REVENUE_LINE_CONFIG}
               xAxisKey="month"
               height={300}
@@ -137,7 +173,7 @@ export function ExecutiveOverview() {
           </CardHeader>
           <CardContent>
             <MemoizedBarChart
-              data={unitSizeData}
+              data={safeUnitSizeData}
               bars={UNIT_SIZE_BAR_CONFIG}
               xAxisKey="size"
               height={300}
@@ -154,9 +190,9 @@ export function ExecutiveOverview() {
         <CardHeader>
           <CardTitle>Belegungsrate (12 Monate)</CardTitle>
         </CardHeader>
-        <CardContent>
-          <MemoizedLineChart
-            data={monthlyData}
+          <CardContent>
+            <MemoizedLineChart
+              data={safeMonthlyData}
             lines={OCCUPANCY_LINE_CONFIG}
             xAxisKey="month"
             height={250}

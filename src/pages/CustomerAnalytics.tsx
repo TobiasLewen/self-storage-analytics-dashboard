@@ -70,24 +70,68 @@ export function CustomerAnalytics() {
     refetchUnits()
   }
 
+  // Show loading state while any data is being fetched
   if (isLoading) {
     return <CustomerAnalyticsSkeleton />
   }
 
-  if (error || !summary || !segments || !monthlyData || !customersData || !unitsData) {
+  // Check for errors and provide specific error messages
+  if (error) {
+    const errorMessages = []
+    if (summaryError) errorMessages.push(`Summary: ${summaryError.message}`)
+    if (segmentsError) errorMessages.push(`Segments: ${segmentsError.message}`)
+    if (metricsError) errorMessages.push(`Metrics: ${metricsError.message}`)
+    if (customersError) errorMessages.push(`Customers: ${customersError.message}`)
+    if (unitsError) errorMessages.push(`Units: ${unitsError.message}`)
+    
+    console.error('Customer analytics error:', errorMessages.join(', '))
+    
     return (
       <PageErrorState
         title="Failed to load customer data"
-        message={error?.message || 'Unable to load customer analytics. Please try again.'}
+        message={errorMessages.join(' | ') || 'Unable to load customer analytics. Please try again.'}
         onRetry={retry}
       />
     )
   }
 
+  // Validate that all required data is present and not empty
+  const hasSummary = summary !== undefined
+  const hasSegments = segments && segments.length > 0
+  const hasMonthlyData = monthlyData && monthlyData.length > 0
+  const hasCustomersData = customersData && customersData.length > 0
+  const hasUnitsData = unitsData && unitsData.length > 0
+
+  if (!hasSummary || !hasSegments || !hasMonthlyData || !hasCustomersData || !hasUnitsData) {
+    const missingData = []
+    if (!hasSummary) missingData.push('Dashboard summary')
+    if (!hasSegments) missingData.push('Customer segments')
+    if (!hasMonthlyData) missingData.push('Monthly metrics')
+    if (!hasCustomersData) missingData.push('Customer data')
+    if (!hasUnitsData) missingData.push('Unit data')
+    
+    console.error('Customer analytics missing data:', missingData.join(', '))
+    
+    return (
+      <PageErrorState
+        title="Failed to load customer data"
+        message={`Missing required data: ${missingData.join(', ')}. Please try again.`}
+        onRetry={retry}
+      />
+    )
+  }
+
+  // At this point, all data is guaranteed to be present
+  const safeSummary = summary!
+  const safeSegments = segments!
+  const safeMonthlyData = monthlyData!
+  const safeCustomersData = customersData!
+  const safeUnitsData = unitsData!
+
   // Get top customers by units rented
-  const activeCustomers = customersData.filter((c) => !c.endDate)
+  const activeCustomers = safeCustomersData.filter((c) => !c.endDate)
   const customerRevenue = activeCustomers.map((customer) => {
-    const customerUnits = unitsData.filter((u) => u.customerId === customer.id)
+    const customerUnits = safeUnitsData.filter((u) => u.customerId === customer.id)
     const monthlyRevenue = customerUnits.reduce((sum, u) => sum + u.pricePerMonth, 0)
     return {
       ...customer,
@@ -97,7 +141,7 @@ export function CustomerAnalytics() {
   }).sort((a, b) => b.monthlyRevenue - a.monthlyRevenue).slice(0, 10)
 
   // Prepare data for new customers chart
-  const customerTrendData = monthlyData.map((m) => ({
+  const customerTrendData = safeMonthlyData.map((m) => ({
     month: m.month,
     newCustomers: m.newCustomers,
     churnedCustomers: m.churnedCustomers,
@@ -105,7 +149,7 @@ export function CustomerAnalytics() {
   }))
 
   // Prepare pie chart data with translated names
-  const pieChartData = segments.map(s => ({ ...s, name: s.type === 'private' ? 'Privat' : 'Geschäft' }))
+  const pieChartData = safeSegments.map(s => ({ ...s, name: s.type === 'private' ? 'Privat' : 'Geschäft' }))
 
   return (
     <div className="space-y-6">
@@ -113,25 +157,25 @@ export function CustomerAnalytics() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
           title="Aktive Kunden"
-          value={summary.totalCustomers.toString()}
+          value={safeSummary.totalCustomers.toString()}
           icon={Users}
           iconColor="text-blue-500"
         />
         <KPICard
           title="Churn Rate"
-          value={formatPercent(summary.churnRate)}
+          value={formatPercent(safeSummary.churnRate)}
           icon={UserMinus}
           iconColor="text-red-500"
         />
         <KPICard
           title="Ø Customer Lifetime Value"
-          value={formatCurrency(summary.avgCustomerLifetimeValue)}
+          value={formatCurrency(safeSummary.avgCustomerLifetimeValue)}
           icon={Euro}
           iconColor="text-green-500"
         />
         <KPICard
           title="Geschäftskunden"
-          value={`${segments.find((s) => s.type === 'business')?.count || 0}`}
+          value={`${safeSegments.find((s) => s.type === 'business')?.count || 0}`}
           icon={Building2}
           iconColor="text-purple-500"
         />
@@ -171,7 +215,7 @@ export function CustomerAnalytics() {
               tooltipFormatter={pieTooltipFormatter}
             />
             <div className="mt-4 flex justify-center gap-8">
-              {segments.map((segment, index) => (
+              {safeSegments.map((segment, index) => (
                 <div key={segment.type} className="flex items-center gap-2">
                   <div
                     className="h-3 w-3 rounded-full"

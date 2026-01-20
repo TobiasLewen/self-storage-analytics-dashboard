@@ -3,10 +3,20 @@ import type { ForecastData, PricingAlert } from '../data/types'
 
 export const forecastService = {
   getForecast(): Promise<ForecastData[]> {
-    return Promise.resolve(getForecastData())
+    // Simulate network delay for better loading state testing
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(getForecastData())
+      }, 100)
+    })
   },
 
   getPricingAlerts(): Promise<PricingAlert[]> {
-    return Promise.resolve(getPricingAlerts())
+    // Simulate network delay for better loading state testing
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(getPricingAlerts())
+      }, 100)
+    })
   },
 }

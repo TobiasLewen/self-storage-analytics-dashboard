@@ -3,18 +3,34 @@ import type { Unit, UnitSizeMetrics } from '../data/types'
 
 export const unitService = {
   getUnits(): Promise<Unit[]> {
-    return Promise.resolve(units)
+    // Simulate network delay for better loading state testing
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(units)
+      }, 100)
+    })
   },
 
   getUnitById(id: string): Promise<Unit> {
-    const unit = units.find(u => u.id === id)
-    if (!unit) {
-      return Promise.reject(new Error(`Unit with id ${id} not found`))
-    }
-    return Promise.resolve(unit)
+    // Simulate network delay for better loading state testing
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const unit = units.find(u => u.id === id)
+        if (!unit) {
+          reject(new Error(`Unit with id ${id} not found`))
+        } else {
+          resolve(unit)
+        }
+      }, 100)
+    })
   },
 
   getUnitMetrics(): Promise<UnitSizeMetrics[]> {
-    return Promise.resolve(getUnitSizeMetrics())
+    // Simulate network delay for better loading state testing
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(getUnitSizeMetrics())
+      }, 100)
+    })
   },
 }

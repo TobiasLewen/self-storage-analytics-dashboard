@@ -3,18 +3,34 @@ import type { Customer, CustomerSegment } from '../data/types'
 
 export const customerService = {
   getCustomers(): Promise<Customer[]> {
-    return Promise.resolve(customers)
+    // Simulate network delay for better loading state testing
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(customers)
+      }, 100)
+    })
   },
 
   getCustomerById(id: string): Promise<Customer> {
-    const customer = customers.find(c => c.id === id)
-    if (!customer) {
-      return Promise.reject(new Error(`Customer with id ${id} not found`))
-    }
-    return Promise.resolve(customer)
+    // Simulate network delay for better loading state testing
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const customer = customers.find(c => c.id === id)
+        if (!customer) {
+          reject(new Error(`Customer with id ${id} not found`))
+        } else {
+          resolve(customer)
+        }
+      }, 100)
+    })
   },
 
   getCustomerSegments(): Promise<CustomerSegment[]> {
-    return Promise.resolve(getCustomerSegments())
+    // Simulate network delay for better loading state testing
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(getCustomerSegments())
+      }, 100)
+    })
   },
 }

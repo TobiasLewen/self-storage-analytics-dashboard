@@ -55,27 +55,59 @@ export function UnitPerformance() {
     refetchMetrics()
   }
 
+  // Show loading state while any data is being fetched
   if (isLoading) {
     return <UnitPerformanceSkeleton />
   }
 
-  if (error || !unitSizeData || !monthlyData) {
+  // Check for errors and provide specific error messages
+  if (error) {
+    const errorMessages = []
+    if (unitsError) errorMessages.push(`Units: ${unitsError.message}`)
+    if (metricsError) errorMessages.push(`Metrics: ${metricsError.message}`)
+    
+    console.error('Unit performance error:', errorMessages.join(', '))
+    
     return (
       <PageErrorState
         title="Failed to load unit data"
-        message={error?.message || 'Unable to load unit performance data. Please try again.'}
+        message={errorMessages.join(' | ') || 'Unable to load unit performance data. Please try again.'}
         onRetry={retry}
       />
     )
   }
 
+  // Validate that all required data is present and not empty
+  const hasUnitSizeData = unitSizeData && unitSizeData.length > 0
+  const hasMonthlyData = monthlyData && monthlyData.length > 0
+
+  if (!hasUnitSizeData || !hasMonthlyData) {
+    const missingData = []
+    if (!hasUnitSizeData) missingData.push('Unit size data')
+    if (!hasMonthlyData) missingData.push('Monthly metrics')
+    
+    console.error('Unit performance missing data:', missingData.join(', '))
+    
+    return (
+      <PageErrorState
+        title="Failed to load unit data"
+        message={`Missing required data: ${missingData.join(', ')}. Please try again.`}
+        onRetry={retry}
+      />
+    )
+  }
+
+  // At this point, all data is guaranteed to be present
+  const safeUnitSizeData = unitSizeData!
+  const safeMonthlyData = monthlyData!
+
   // Calculate most/least profitable
-  const sortedByRevenue = [...unitSizeData].sort((a, b) => b.revenuePerSqm - a.revenuePerSqm)
+  const sortedByRevenue = [...safeUnitSizeData].sort((a, b) => b.revenuePerSqm - a.revenuePerSqm)
   const mostProfitable = sortedByRevenue[0]
   const leastProfitable = sortedByRevenue[sortedByRevenue.length - 1]
 
   // Calculate turnover rate (simplified: new customers / total customers)
-  const lastMonth = monthlyData[monthlyData.length - 1]
+  const lastMonth = safeMonthlyData[safeMonthlyData.length - 1]
   const turnoverRate = ((lastMonth.newCustomers + lastMonth.churnedCustomers) / lastMonth.occupiedUnits) * 100
 
   return (
@@ -139,7 +171,7 @@ export function UnitPerformance() {
         </CardHeader>
         <CardContent>
           <MemoizedBarChart
-            data={unitSizeData}
+            data={safeUnitSizeData}
             bars={OCCUPANCY_BAR_CONFIG}
             xAxisKey="size"
             height={300}
@@ -171,8 +203,8 @@ export function UnitPerformance() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {unitSizeData.map((item, index) => {
-                const avgRevenuePerSqm = unitSizeData.reduce((sum, i) => sum + i.revenuePerSqm, 0) / unitSizeData.length
+              {safeUnitSizeData.map((item, index) => {
+                const avgRevenuePerSqm = safeUnitSizeData.reduce((sum, i) => sum + i.revenuePerSqm, 0) / safeUnitSizeData.length
                 const isAboveAvg = item.revenuePerSqm > avgRevenuePerSqm
 
                 return (

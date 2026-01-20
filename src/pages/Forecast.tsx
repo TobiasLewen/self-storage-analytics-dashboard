@@ -62,15 +62,49 @@ export function Forecast() {
     refetchMetrics()
   }
 
+  // Show loading state while any data is being fetched
   if (isLoading) {
     return <ForecastSkeleton />
   }
 
-  if (error || !forecastData || !pricingAlerts || !unitSizeData || !monthlyData) {
+  // Check for errors and provide specific error messages
+  if (error) {
+    const errorMessages = []
+    if (forecastError) errorMessages.push(`Forecast: ${forecastError.message}`)
+    if (alertsError) errorMessages.push(`Alerts: ${alertsError.message}`)
+    if (unitsError) errorMessages.push(`Units: ${unitsError.message}`)
+    if (metricsError) errorMessages.push(`Metrics: ${metricsError.message}`)
+    
+    console.error('Forecast page error:', errorMessages.join(', '))
+    
     return (
       <PageErrorState
         title="Failed to load forecast"
-        message={error?.message || 'Unable to load forecast data. Please try again.'}
+        message={errorMessages.join(' | ') || 'Unable to load forecast data. Please try again.'}
+        onRetry={retry}
+      />
+    )
+  }
+
+  // Validate that all required data is present and not empty
+  const hasForecastData = forecastData && forecastData.length > 0
+  const hasPricingAlerts = pricingAlerts && pricingAlerts.length >= 0
+  const hasUnitSizeData = unitSizeData && unitSizeData.length > 0
+  const hasMonthlyData = monthlyData && monthlyData.length > 0
+
+  if (!hasForecastData || !hasPricingAlerts || !hasUnitSizeData || !hasMonthlyData) {
+    const missingData = []
+    if (!hasForecastData) missingData.push('Forecast data')
+    if (!hasPricingAlerts) missingData.push('Pricing alerts')
+    if (!hasUnitSizeData) missingData.push('Unit size data')
+    if (!hasMonthlyData) missingData.push('Monthly metrics')
+    
+    console.error('Forecast page missing data:', missingData.join(', '))
+    
+    return (
+      <PageErrorState
+        title="Failed to load forecast"
+        message={`Missing required data: ${missingData.join(', ')}. Please try again.`}
         onRetry={retry}
       />
     )
