@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { ApiError } from '@/services/api'
+import { useToast } from '@/hooks/useToast'
+import { parseError } from '@/lib/errorUtils'
 
 export function Login() {
   const [email, setEmail] = useState('')
@@ -12,6 +13,7 @@ export function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const toast = useToast()
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/'
 
@@ -22,13 +24,12 @@ export function Login() {
 
     try {
       await login({ email, password })
+      toast.success('Welcome back!', 'You have successfully signed in.')
       navigate(from, { replace: true })
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.status === 401 ? 'Invalid email or password' : err.message)
-      } else {
-        setError('An unexpected error occurred')
-      }
+      const parsed = parseError(err)
+      setError(parsed.message)
+      toast.error(parsed.title, parsed.message)
     } finally {
       setIsSubmitting(false)
     }
