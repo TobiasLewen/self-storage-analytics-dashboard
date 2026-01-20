@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import type { DateRange } from 'react-day-picker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedBarChart } from '@/components/charts/MemoizedCharts'
 import { DataTable, createSortableColumn } from '@/components/ui/data-table'
@@ -5,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { SkeletonCard, SkeletonChart, SkeletonTable } from '@/components/ui/skeleton'
 import { PageErrorState } from '@/components/ui/error-state'
 import { ExportButton } from '@/components/reports/ExportButton'
+import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { useUnitMetrics } from '@/hooks/useUnits'
 import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency, formatPercent } from '@/lib/utils'
@@ -67,6 +70,13 @@ function UnitPerformanceSkeleton() {
 }
 
 export function UnitPerformance() {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const end = new Date()
+    const start = new Date()
+    start.setMonth(start.getMonth() - 3)
+    return { from: start, to: end }
+  })
+
   const { metrics: unitSizeData, isLoading: unitsLoading, error: unitsError, refetch: refetchUnits } = useUnitMetrics()
   const { metrics: monthlyData, isLoading: metricsLoading, error: metricsError, refetch: refetchMetrics } = useMonthlyMetrics()
 
@@ -197,6 +207,17 @@ export function UnitPerformance() {
 
   return (
     <div className="space-y-6">
+      {/* Header with Date Range */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Unit Performance</h2>
+          <p className="text-muted-foreground">
+            Analyse der Einheiten-Leistung und Belegung
+          </p>
+        </div>
+        <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+      </div>
+
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>

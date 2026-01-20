@@ -7,6 +7,7 @@ import {
   Users,
   TrendingUp,
   Warehouse,
+  Settings,
   X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Unit Performance', href: '/units', icon: Box },
   { name: 'Customer Analytics', href: '/customers', icon: Users },
   { name: 'Forecast', href: '/forecast', icon: TrendingUp },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {

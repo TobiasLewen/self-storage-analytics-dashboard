@@ -1,10 +1,12 @@
-import { Menu, Moon, Sun, LogOut } from 'lucide-react'
+import { useState } from 'react'
+import { Menu, Moon, Sun, LogOut, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/useToast'
 import { ExportButton } from '@/components/reports/ExportButton'
+import { GlobalSearch } from '@/components/search/GlobalSearch'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -12,6 +14,7 @@ interface HeaderProps {
 }
 
 export function Header({ onMenuClick, title }: HeaderProps) {
+  const [searchOpen, setSearchOpen] = useState(false)
   const { toggleTheme } = useTheme()
   const { logout, user } = useAuth()
   const toast = useToast()
@@ -43,6 +46,15 @@ export function Header({ onMenuClick, title }: HeaderProps) {
             {user.name}
           </span>
         )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSearchOpen(true)}
+          title="Search (Ctrl+K)"
+        >
+          <Search className="h-5 w-5" />
+          <span className="sr-only">Search</span>
+        </Button>
         <ExportButton />
         <Button
           variant="ghost"
@@ -64,6 +76,8 @@ export function Header({ onMenuClick, title }: HeaderProps) {
           <span className="sr-only">Sign out</span>
         </Button>
       </div>
+
+      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   )
 }

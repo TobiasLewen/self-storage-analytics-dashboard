@@ -1,8 +1,11 @@
+import { useState } from 'react'
+import type { DateRange } from 'react-day-picker'
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedLineChart, MemoizedBarChart } from '@/components/charts/MemoizedCharts'
 import { SkeletonCard, SkeletonChart } from '@/components/ui/skeleton'
 import { PageErrorState } from '@/components/ui/error-state'
+import { DateRangePicker } from '@/components/ui/date-range-picker'
 import { useDashboardSummary } from '@/hooks/useDashboard'
 import { useUnitMetrics } from '@/hooks/useUnits'
 import { useMonthlyMetrics } from '@/hooks/useMetrics'
@@ -51,6 +54,13 @@ const revenueYAxisFormatter = (value: number) => `${(value / 1000).toFixed(0)}k`
 const occupancyYAxisFormatter = (value: number) => `${value}%`
 
 export function ExecutiveOverview() {
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const end = new Date()
+    const start = new Date()
+    start.setMonth(start.getMonth() - 6)
+    return { from: start, to: end }
+  })
+
   const { summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary } = useDashboardSummary()
   const { metrics: unitSizeData, isLoading: unitsLoading, error: unitsError, refetch: refetchUnits } = useUnitMetrics()
   const { metrics: monthlyData, isLoading: metricsLoading, error: metricsError, refetch: refetchMetrics } = useMonthlyMetrics()
@@ -116,6 +126,17 @@ export function ExecutiveOverview() {
 
   return (
     <div className="space-y-6">
+      {/* Date Range Filter */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Dashboard Übersicht</h2>
+          <p className="text-muted-foreground">
+            Ihre wichtigsten Kennzahlen auf einen Blick
+          </p>
+        </div>
+        <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+      </div>
+
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
