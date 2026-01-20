@@ -128,8 +128,8 @@ export const units: Unit[] = generateUnits()
 export const customers: Customer[] = generateCustomers()
 export const monthlyMetrics: MonthlyMetrics[] = generateMonthlyMetrics()
 
-// Computed metrics
-export function getUnitSizeMetrics(): UnitSizeMetrics[] {
+// Memoized computed metrics - computed once at module load time
+function computeUnitSizeMetrics(): UnitSizeMetrics[] {
   const sizes: UnitSize[] = ['5m²', '10m²', '15m²', '20m²', '30m²']
 
   return sizes.map((size) => {
@@ -151,7 +151,7 @@ export function getUnitSizeMetrics(): UnitSizeMetrics[] {
   })
 }
 
-export function getCustomerSegments(): CustomerSegment[] {
+function computeCustomerSegments(): CustomerSegment[] {
   const activeCustomers = customers.filter((c) => !c.endDate)
   const privateCustomers = activeCustomers.filter((c) => c.type === 'private')
   const businessCustomers = activeCustomers.filter((c) => c.type === 'business')
@@ -174,7 +174,7 @@ export function getCustomerSegments(): CustomerSegment[] {
   ]
 }
 
-export function getPricingAlerts(): PricingAlert[] {
+function computePricingAlerts(): PricingAlert[] {
   const alerts: PricingAlert[] = []
 
   // Find underpriced occupied units
@@ -209,7 +209,7 @@ export function getPricingAlerts(): PricingAlert[] {
   return alerts.slice(0, 8) // Limit to top 8 alerts
 }
 
-export function getForecastData(): ForecastData[] {
+function computeForecastData(): ForecastData[] {
   const historical = monthlyMetrics.map((m) => ({
     month: m.month,
     actual: m.revenue,
@@ -240,7 +240,7 @@ export function getForecastData(): ForecastData[] {
   return [...historical, ...forecast]
 }
 
-export function getDashboardSummary(): DashboardSummary {
+function computeDashboardSummary(): DashboardSummary {
   const currentMonth = monthlyMetrics[monthlyMetrics.length - 1]
   const lastMonth = monthlyMetrics[monthlyMetrics.length - 2]
   const lastYear = monthlyMetrics[0]
@@ -270,4 +270,32 @@ export function getDashboardSummary(): DashboardSummary {
     churnRate: Math.round((churnedLastMonth / activeCustomers.length) * 1000) / 10,
     avgCustomerLifetimeValue: Math.round(avgDurationMonths * 105), // avg price * avg duration
   }
+}
+
+// Pre-computed cached values - computed once at module load
+const cachedUnitSizeMetrics = computeUnitSizeMetrics()
+const cachedCustomerSegments = computeCustomerSegments()
+const cachedPricingAlerts = computePricingAlerts()
+const cachedForecastData = computeForecastData()
+const cachedDashboardSummary = computeDashboardSummary()
+
+// Export memoized getters that return cached values
+export function getUnitSizeMetrics(): UnitSizeMetrics[] {
+  return cachedUnitSizeMetrics
+}
+
+export function getCustomerSegments(): CustomerSegment[] {
+  return cachedCustomerSegments
+}
+
+export function getPricingAlerts(): PricingAlert[] {
+  return cachedPricingAlerts
+}
+
+export function getForecastData(): ForecastData[] {
+  return cachedForecastData
+}
+
+export function getDashboardSummary(): DashboardSummary {
+  return cachedDashboardSummary
 }
