@@ -9,10 +9,12 @@ import {
 } from '@/components/ui/select'
 import { useSettings } from '@/contexts/SettingsContext'
 import { useTheme } from '@/hooks/useTheme'
+import { useToast } from '@/hooks/useToast'
 
 export function AppearanceSettings() {
   const { settings, updateSettings } = useSettings()
   const { theme, toggleTheme } = useTheme()
+  const toast = useToast()
 
   const handleThemeChange = (value: string) => {
     updateSettings({ theme: value as 'light' | 'dark' | 'system' })
@@ -22,6 +24,12 @@ export function AppearanceSettings() {
     } else if (value === 'dark' && theme === 'light') {
       toggleTheme()
     }
+    toast.success('Gespeichert', 'Design wurde aktualisiert')
+  }
+
+  const handleUpdate = (updates: Partial<typeof settings>) => {
+    updateSettings(updates)
+    toast.success('Gespeichert', 'Einstellungen wurden aktualisiert')
   }
 
   return (
@@ -47,7 +55,7 @@ export function AppearanceSettings() {
         <Label htmlFor="accentColor">Akzentfarbe</Label>
         <Select
           value={settings.accentColor}
-          onValueChange={(value) => updateSettings({ accentColor: value })}
+          onValueChange={(value) => handleUpdate({ accentColor: value })}
         >
           <SelectTrigger id="accentColor">
             <SelectValue />
@@ -75,7 +83,7 @@ export function AppearanceSettings() {
         <Switch
           id="compactMode"
           checked={settings.compactMode}
-          onCheckedChange={(checked) => updateSettings({ compactMode: checked })}
+          onCheckedChange={(checked) => handleUpdate({ compactMode: checked })}
         />
       </div>
     </div>

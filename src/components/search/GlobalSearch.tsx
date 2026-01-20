@@ -29,6 +29,11 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
         e.preventDefault()
         onOpenChange(!open)
       }
+      if (e.key === 'Escape' && open) {
+        e.preventDefault()
+        onOpenChange(false)
+        setQuery('')
+      }
     }
 
     document.addEventListener('keydown', down)
@@ -59,7 +64,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
       {/* Command Dialog */}
       <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-popover shadow-lg">
-        <Command className="rounded-lg">
+        <Command className="rounded-lg" shouldFilter={false}>
           <CommandInput
             placeholder="Suche nach Seiten, Kunden, Einheiten..."
             value={query}

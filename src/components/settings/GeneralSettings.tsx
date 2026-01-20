@@ -7,9 +7,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useSettings } from '@/contexts/SettingsContext'
+import { useToast } from '@/hooks/useToast'
 
 export function GeneralSettings() {
   const { settings, updateSettings } = useSettings()
+  const toast = useToast()
+
+  const handleUpdate = (updates: Partial<typeof settings>) => {
+    updateSettings(updates)
+    toast.success('Gespeichert', 'Einstellungen wurden aktualisiert')
+  }
 
   return (
     <div className="space-y-6">
@@ -17,7 +24,7 @@ export function GeneralSettings() {
         <Label htmlFor="language">Sprache</Label>
         <Select
           value={settings.language}
-          onValueChange={(value) => updateSettings({ language: value as 'de' | 'en' })}
+          onValueChange={(value) => handleUpdate({ language: value as 'de' | 'en' })}
         >
           <SelectTrigger id="language">
             <SelectValue />
@@ -36,7 +43,7 @@ export function GeneralSettings() {
         <Label htmlFor="dateFormat">Datumsformat</Label>
         <Select
           value={settings.dateFormat}
-          onValueChange={(value) => updateSettings({ dateFormat: value as any })}
+          onValueChange={(value) => handleUpdate({ dateFormat: value as any })}
         >
           <SelectTrigger id="dateFormat">
             <SelectValue />
@@ -56,7 +63,7 @@ export function GeneralSettings() {
         <Label htmlFor="currency">Währung</Label>
         <Select
           value={settings.currencyFormat}
-          onValueChange={(value) => updateSettings({ currencyFormat: value as any })}
+          onValueChange={(value) => handleUpdate({ currencyFormat: value as any })}
         >
           <SelectTrigger id="currency">
             <SelectValue />
@@ -76,7 +83,7 @@ export function GeneralSettings() {
         <Label htmlFor="defaultPage">Startseite</Label>
         <Select
           value={settings.defaultPage}
-          onValueChange={(value) => updateSettings({ defaultPage: value })}
+          onValueChange={(value) => handleUpdate({ defaultPage: value })}
         >
           <SelectTrigger id="defaultPage">
             <SelectValue />
