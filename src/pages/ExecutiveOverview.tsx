@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import {
   BarChart,
   Bar,
@@ -13,7 +14,8 @@ import {
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SkeletonCard, SkeletonChart } from '@/components/ui/skeleton'
-import { useLoading } from '@/hooks/useLoading'
+import { PageErrorState } from '@/components/ui/error-state'
+import { useDataFetch } from '@/hooks/useDataFetch'
 import {
   getDashboardSummary,
   getUnitSizeMetrics,
@@ -41,13 +43,29 @@ function ExecutiveOverviewSkeleton() {
 }
 
 export function ExecutiveOverview() {
-  const isLoading = useLoading(1000)
-  const summary = getDashboardSummary()
-  const unitSizeData = getUnitSizeMetrics()
+  const fetchData = useCallback(() => ({
+    summary: getDashboardSummary(),
+    unitSizeData: getUnitSizeMetrics(),
+    monthlyData: monthlyMetrics,
+  }), [])
+
+  const { data, isLoading, error, retry } = useDataFetch(fetchData)
 
   if (isLoading) {
     return <ExecutiveOverviewSkeleton />
   }
+
+  if (error || !data) {
+    return (
+      <PageErrorState
+        title="Failed to load dashboard"
+        message={error?.message || 'Unable to load dashboard data. Please try again.'}
+        onRetry={retry}
+      />
+    )
+  }
+
+  const { summary, unitSizeData, monthlyData } = data
 
   return (
     <div className="space-y-6">
@@ -91,7 +109,7 @@ export function ExecutiveOverview() {
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyMetrics}>
+                <LineChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis
                     dataKey="month"
@@ -181,7 +199,7 @@ export function ExecutiveOverview() {
         <CardContent>
           <div className="h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthlyMetrics}>
+              <LineChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis
                   dataKey="month"

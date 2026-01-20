@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import {
   LineChart,
   Line,
@@ -23,7 +24,8 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { SkeletonCard, SkeletonChart, SkeletonPieChart, SkeletonTable } from '@/components/ui/skeleton'
-import { useLoading } from '@/hooks/useLoading'
+import { PageErrorState } from '@/components/ui/error-state'
+import { useDataFetch } from '@/hooks/useDataFetch'
 import {
   getDashboardSummary,
   getCustomerSegments,
@@ -55,18 +57,36 @@ function CustomerAnalyticsSkeleton() {
 }
 
 export function CustomerAnalytics() {
-  const isLoading = useLoading(1000)
-  const summary = getDashboardSummary()
-  const segments = getCustomerSegments()
+  const fetchData = useCallback(() => ({
+    summary: getDashboardSummary(),
+    segments: getCustomerSegments(),
+    monthlyData: monthlyMetrics,
+    customersData: customers,
+    unitsData: units,
+  }), [])
+
+  const { data, isLoading, error, retry } = useDataFetch(fetchData)
 
   if (isLoading) {
     return <CustomerAnalyticsSkeleton />
   }
 
+  if (error || !data) {
+    return (
+      <PageErrorState
+        title="Failed to load customer data"
+        message={error?.message || 'Unable to load customer analytics. Please try again.'}
+        onRetry={retry}
+      />
+    )
+  }
+
+  const { summary, segments, monthlyData, customersData, unitsData } = data
+
   // Get top customers by units rented
-  const activeCustomers = customers.filter((c) => !c.endDate)
+  const activeCustomers = customersData.filter((c) => !c.endDate)
   const customerRevenue = activeCustomers.map((customer) => {
-    const customerUnits = units.filter((u) => u.customerId === customer.id)
+    const customerUnits = unitsData.filter((u) => u.customerId === customer.id)
     const monthlyRevenue = customerUnits.reduce((sum, u) => sum + u.pricePerMonth, 0)
     return {
       ...customer,
@@ -76,7 +96,7 @@ export function CustomerAnalytics() {
   }).sort((a, b) => b.monthlyRevenue - a.monthlyRevenue).slice(0, 10)
 
   // Prepare data for new customers chart
-  const customerTrendData = monthlyMetrics.map((m) => ({
+  const customerTrendData = monthlyData.map((m) => ({
     month: m.month,
     newCustomers: m.newCustomers,
     churnedCustomers: m.churnedCustomers,

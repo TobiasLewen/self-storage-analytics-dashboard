@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import {
   BarChart,
   Bar,
@@ -19,7 +20,8 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { SkeletonCard, SkeletonChart, SkeletonTable } from '@/components/ui/skeleton'
-import { useLoading } from '@/hooks/useLoading'
+import { PageErrorState } from '@/components/ui/error-state'
+import { useDataFetch } from '@/hooks/useDataFetch'
 import { getUnitSizeMetrics, monthlyMetrics } from '@/data/mockData'
 import { formatCurrency, formatPercent } from '@/lib/utils'
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react'
@@ -41,12 +43,28 @@ function UnitPerformanceSkeleton() {
 }
 
 export function UnitPerformance() {
-  const isLoading = useLoading(1000)
-  const unitSizeData = getUnitSizeMetrics()
+  const fetchData = useCallback(() => ({
+    unitSizeData: getUnitSizeMetrics(),
+    monthlyData: monthlyMetrics,
+  }), [])
+
+  const { data, isLoading, error, retry } = useDataFetch(fetchData)
 
   if (isLoading) {
     return <UnitPerformanceSkeleton />
   }
+
+  if (error || !data) {
+    return (
+      <PageErrorState
+        title="Failed to load unit data"
+        message={error?.message || 'Unable to load unit performance data. Please try again.'}
+        onRetry={retry}
+      />
+    )
+  }
+
+  const { unitSizeData, monthlyData } = data
 
   // Calculate most/least profitable
   const sortedByRevenue = [...unitSizeData].sort((a, b) => b.revenuePerSqm - a.revenuePerSqm)
@@ -54,7 +72,7 @@ export function UnitPerformance() {
   const leastProfitable = sortedByRevenue[sortedByRevenue.length - 1]
 
   // Calculate turnover rate (simplified: new customers / total customers)
-  const lastMonth = monthlyMetrics[monthlyMetrics.length - 1]
+  const lastMonth = monthlyData[monthlyData.length - 1]
   const turnoverRate = ((lastMonth.newCustomers + lastMonth.churnedCustomers) / lastMonth.occupiedUnits) * 100
 
   return (

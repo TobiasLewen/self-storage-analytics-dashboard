@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import {
   LineChart,
   Line,
@@ -15,7 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { AlertCard } from '@/components/cards/AlertCard'
 import { Badge } from '@/components/ui/badge'
 import { SkeletonCard, SkeletonChart, Skeleton } from '@/components/ui/skeleton'
-import { useLoading } from '@/hooks/useLoading'
+import { PageErrorState } from '@/components/ui/error-state'
+import { useDataFetch } from '@/hooks/useDataFetch'
 import { getForecastData, getPricingAlerts, monthlyMetrics, getUnitSizeMetrics } from '@/data/mockData'
 import { formatCurrency } from '@/lib/utils'
 import { TrendingUp, Calendar, AlertCircle, Lightbulb } from 'lucide-react'
@@ -55,17 +57,33 @@ function ForecastSkeleton() {
 }
 
 export function Forecast() {
-  const isLoading = useLoading(1000)
-  const forecastData = getForecastData()
-  const pricingAlerts = getPricingAlerts()
-  const unitSizeData = getUnitSizeMetrics()
+  const fetchData = useCallback(() => ({
+    forecastData: getForecastData(),
+    pricingAlerts: getPricingAlerts(),
+    unitSizeData: getUnitSizeMetrics(),
+    monthlyData: monthlyMetrics,
+  }), [])
+
+  const { data, isLoading, error, retry } = useDataFetch(fetchData)
 
   if (isLoading) {
     return <ForecastSkeleton />
   }
 
+  if (error || !data) {
+    return (
+      <PageErrorState
+        title="Failed to load forecast"
+        message={error?.message || 'Unable to load forecast data. Please try again.'}
+        onRetry={retry}
+      />
+    )
+  }
+
+  const { forecastData, pricingAlerts, unitSizeData, monthlyData } = data
+
   // Calculate seasonal trends (using monthly metrics)
-  const seasonalData = monthlyMetrics.map((m, index) => ({
+  const seasonalData = monthlyData.map((m, index) => ({
     ...m,
     seasonalIndex: 1 + Math.sin((index - 2) * Math.PI / 6) * 0.1,
   }))
