@@ -1,16 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedBarChart } from '@/components/charts/MemoizedCharts'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { DataTable, createSortableColumn } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { SkeletonCard, SkeletonChart, SkeletonTable } from '@/components/ui/skeleton'
 import { PageErrorState } from '@/components/ui/error-state'
+import { ExportButton } from '@/components/reports/ExportButton'
 import { useUnitMetrics } from '@/hooks/useUnits'
 import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency, formatPercent } from '@/lib/utils'
@@ -29,6 +23,8 @@ import {
   LABELS,
 } from '@/constants'
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Minus, CheckCircle2, AlertCircle, XCircle } from 'lucide-react'
+import type { ColumnDef } from '@tanstack/react-table'
+import type { UnitSizeMetrics } from '@/data/types'
 
 // Chart configurations - defined outside component
 const OCCUPANCY_BAR_CONFIG = [{
@@ -53,6 +49,8 @@ const OCCUPANCY_COLOR_CLASSES = {
   medium: 'text-yellow-600',
   low: 'text-red-600',
 } as const
+
+
 
 function UnitPerformanceSkeleton() {
   return (
@@ -126,6 +124,76 @@ export function UnitPerformance() {
   const mostProfitable = findMostProfitableSize(safeUnitSizeData)
   const leastProfitable = findLeastProfitableSize(safeUnitSizeData)
   const turnoverRate = calculateUnitTurnoverRate(safeMonthlyData)
+
+  // Define table columns
+  const unitPerformanceColumns: ColumnDef<UnitSizeMetrics>[] = [
+    createSortableColumn('size', 'Größe', ({ getValue, row }) => {
+      const index = row.index
+      return (
+        <Badge
+          variant="outline"
+          style={{ borderColor: CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length] }}
+        >
+          {getValue() as string}
+        </Badge>
+      )
+    }),
+    createSortableColumn('totalUnits', 'Einheiten', ({ getValue }) => (
+      <div className="text-right">{getValue() as number}</div>
+    )),
+    createSortableColumn('occupiedUnits', 'Belegt', ({ getValue }) => (
+      <div className="text-right">{getValue() as number}</div>
+    )),
+    createSortableColumn('occupancyRate', 'Belegung', ({ getValue }) => {
+      const occupancyRate = getValue() as number
+      const occupancyStatus = getOccupancyStatus(occupancyRate)
+      const OccupancyStatusIcon = OccupancyIcon[occupancyStatus]
+      return (
+        <div className="flex items-center justify-end gap-1">
+          <OccupancyStatusIcon
+            className={`h-4 w-4 ${OCCUPANCY_COLOR_CLASSES[occupancyStatus]}`}
+            aria-hidden="true"
+          />
+          <span className={OCCUPANCY_COLOR_CLASSES[occupancyStatus]}>
+            {formatPercent(occupancyRate)}
+          </span>
+        </div>
+      )
+    }),
+    createSortableColumn('avgPrice', 'Ø Preis', ({ getValue }) => (
+      <div className="text-right">{formatCurrency(getValue() as number)}</div>
+    )),
+    createSortableColumn('revenuePerSqm', '€/m²', ({ getValue }) => (
+      <div className="text-right font-medium">{formatCurrency(getValue() as number)}</div>
+    )),
+    createSortableColumn('totalRevenue', 'Gesamt', ({ getValue }) => (
+      <div className="text-right">{formatCurrency(getValue() as number)}</div>
+    )),
+    {
+      accessorKey: 'trend',
+      header: 'Trend',
+      cell: ({ row }) => {
+        const item = row.original
+        const comparison = compareUnitRevenueToAverage(item.revenuePerSqm, safeUnitSizeData)
+        const isAboveAvg = comparison === 'above'
+        return (
+          <div>
+            {isAboveAvg ? (
+              <div className="flex items-center text-green-600">
+                <ArrowUpRight className="h-4 w-4" />
+                <span className="text-xs">{getTrendLabel('above')}</span>
+              </div>
+            ) : (
+              <div className="flex items-center text-red-600">
+                <ArrowDownRight className="h-4 w-4" />
+                <span className="text-xs">{getTrendLabel('below')}</span>
+              </div>
+            )}
+          </div>
+        )
+      },
+    },
+  ]
 
   return (
     <div className="space-y-6">
@@ -204,79 +272,18 @@ export function UnitPerformance() {
       {/* Detailed Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Umsatz pro Quadratmeter</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Umsatz pro Quadratmeter</CardTitle>
+            <ExportButton />
+          </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Größe</TableHead>
-                <TableHead className="text-right">Einheiten</TableHead>
-                <TableHead className="text-right">Belegt</TableHead>
-                <TableHead className="text-right">Belegung</TableHead>
-                <TableHead className="text-right">Ø Preis</TableHead>
-                <TableHead className="text-right">€/m²</TableHead>
-                <TableHead className="text-right">Gesamt</TableHead>
-                <TableHead>Trend</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {safeUnitSizeData.map((item, index) => {
-                const occupancyStatus = getOccupancyStatus(item.occupancyRate)
-                const OccupancyStatusIcon = OccupancyIcon[occupancyStatus]
-                const comparison = compareUnitRevenueToAverage(item.revenuePerSqm, safeUnitSizeData)
-                const isAboveAvg = comparison === 'above'
-
-                return (
-                  <TableRow key={item.size}>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        style={{ borderColor: CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length] }}
-                      >
-                        {item.size}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">{item.totalUnits}</TableCell>
-                    <TableCell className="text-right">{item.occupiedUnits}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <OccupancyStatusIcon
-                          className={`h-4 w-4 ${OCCUPANCY_COLOR_CLASSES[occupancyStatus]}`}
-                          aria-hidden="true"
-                        />
-                        <span className={OCCUPANCY_COLOR_CLASSES[occupancyStatus]}>
-                          {formatPercent(item.occupancyRate)}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(item.avgPrice)}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(item.revenuePerSqm)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(item.totalRevenue)}
-                    </TableCell>
-                    <TableCell>
-                      {isAboveAvg ? (
-                        <div className="flex items-center text-green-600">
-                          <ArrowUpRight className="h-4 w-4" />
-                          <span className="text-xs">{getTrendLabel('above')}</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center text-red-600">
-                          <ArrowDownRight className="h-4 w-4" />
-                          <span className="text-xs">{getTrendLabel('below')}</span>
-                        </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+          <DataTable
+            columns={unitPerformanceColumns}
+            data={safeUnitSizeData}
+            searchKey="size"
+            searchPlaceholder="Größe suchen..."
+          />
         </CardContent>
       </Card>
     </div>

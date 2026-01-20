@@ -1,17 +1,11 @@
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedLineChart, MemoizedPieChart } from '@/components/charts/MemoizedCharts'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { DataTable, createSortableColumn } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { SkeletonCard, SkeletonChart, SkeletonPieChart, SkeletonTable } from '@/components/ui/skeleton'
 import { PageErrorState } from '@/components/ui/error-state'
+import { ExportButton } from '@/components/reports/ExportButton'
 import { useDashboardSummary } from '@/hooks/useDashboard'
 import { useCustomerSegments } from '@/hooks/useCustomers'
 import { useMonthlyMetrics } from '@/hooks/useMetrics'
@@ -19,6 +13,7 @@ import { useCustomers } from '@/hooks/useCustomers'
 import { useUnits } from '@/hooks/useUnits'
 import { formatCurrency, formatPercent } from '@/lib/utils'
 import { Users, UserMinus, Euro, Building2 } from 'lucide-react'
+import type { ColumnDef } from '@tanstack/react-table'
 
 const COLORS = ['#3b82f6', '#22c55e']
 
@@ -150,6 +145,34 @@ export function CustomerAnalytics() {
   // Prepare pie chart data with translated names
   const pieChartData = safeSegments.map(s => ({ ...s, name: s.type === 'private' ? 'Privat' : 'Geschäft' }))
 
+  // Define table columns
+  const customerColumns: ColumnDef<typeof customerRevenue[0]>[] = [
+    createSortableColumn('name', 'Kunde', ({ getValue }) => (
+      <div className="font-medium">{getValue() as string}</div>
+    )),
+    createSortableColumn('type', 'Typ', ({ getValue }) => {
+      const type = getValue() as string
+      return (
+        <Badge variant={type === 'business' ? 'default' : 'secondary'}>
+          {type === 'business' ? 'Geschäft' : 'Privat'}
+        </Badge>
+      )
+    }),
+    createSortableColumn('unitsCount', 'Einheiten', ({ getValue }) => (
+      <div className="text-right">{getValue() as number}</div>
+    )),
+    createSortableColumn('monthlyRevenue', 'Monatl. Umsatz', ({ getValue }) => (
+      <div className="text-right font-medium">{formatCurrency(getValue() as number)}</div>
+    )),
+    createSortableColumn('startDate', 'Seit', ({ getValue }) => {
+      const date = new Date(getValue() as string)
+      return date.toLocaleDateString('de-DE', {
+        month: 'short',
+        year: 'numeric',
+      })
+    }),
+  ]
+
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
@@ -234,44 +257,18 @@ export function CustomerAnalytics() {
       {/* Top Customers Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Top Kunden nach Umsatz</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Top Kunden nach Umsatz</CardTitle>
+            <ExportButton />
+          </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Kunde</TableHead>
-                <TableHead>Typ</TableHead>
-                <TableHead className="text-right">Einheiten</TableHead>
-                <TableHead className="text-right">Monatl. Umsatz</TableHead>
-                <TableHead>Seit</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {customerRevenue.map((customer) => (
-                <TableRow key={customer.id}>
-                  <TableCell className="font-medium">{customer.name}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={customer.type === 'business' ? 'default' : 'secondary'}
-                    >
-                      {customer.type === 'business' ? 'Geschäft' : 'Privat'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">{customer.unitsCount}</TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatCurrency(customer.monthlyRevenue)}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(customer.startDate).toLocaleDateString('de-DE', {
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable
+            columns={customerColumns}
+            data={customerRevenue}
+            searchKey="name"
+            searchPlaceholder="Kunden suchen..."
+          />
         </CardContent>
       </Card>
     </div>
