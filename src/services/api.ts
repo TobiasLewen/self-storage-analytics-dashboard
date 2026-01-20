@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+const TOKEN_KEY = 'auth_token'
 
 export class ApiError extends Error {
   status: number
@@ -12,12 +13,36 @@ export class ApiError extends Error {
   }
 }
 
+export function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY)
+}
+
+export function setToken(token: string): void {
+  localStorage.setItem(TOKEN_KEY, token)
+}
+
+export function clearToken(): void {
+  localStorage.removeItem(TOKEN_KEY)
+}
+
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
+  skipAuth?: boolean
+}
+
+let onUnauthorized: (() => void) | null = null
+
+export function setOnUnauthorized(callback: () => void): void {
+  onUnauthorized = callback
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
+    if (response.status === 401) {
+      clearToken()
+      onUnauthorized?.()
+    }
+
     let errorData: unknown
     try {
       errorData = await response.json()
@@ -42,14 +67,24 @@ async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
-  const { body, headers, ...restOptions } = options
+  const { body, headers, skipAuth, ...restOptions } = options
+
+  const token = getToken()
+  const requestHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+  }
+
+  if (!skipAuth && token) {
+    requestHeaders['Authorization'] = `Bearer ${token}`
+  }
+
+  if (headers) {
+    Object.assign(requestHeaders, headers)
+  }
 
   const config: RequestInit = {
     ...restOptions,
-    headers: {
-      'Content-Type': 'application/json',
-      ...headers,
-    },
+    headers: requestHeaders,
   }
 
   if (body !== undefined) {

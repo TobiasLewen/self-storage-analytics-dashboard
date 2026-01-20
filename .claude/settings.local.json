@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(dir /s \"C:\\\\Users\\\\tle\\\\ProjectRepos\\\\private\\\\self-storage-analytics-dashboard\\\\src\" /b)",
+      "Bash(findstr:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)"
     ]
   }
 }

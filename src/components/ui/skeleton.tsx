@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 
-interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
+type SkeletonProps = React.HTMLAttributes<HTMLDivElement>
 
 function Skeleton({ className, ...props }: SkeletonProps) {
   return (
@@ -29,6 +29,8 @@ function SkeletonCard() {
   )
 }
 
+const CHART_BAR_HEIGHTS = [65, 45, 80, 55, 70, 40, 85, 50, 75, 60, 90, 48]
+
 function SkeletonChart({ height = 300 }: { height?: number }) {
   return (
     <div className="rounded-xl border border-border bg-card">
@@ -37,11 +39,11 @@ function SkeletonChart({ height = 300 }: { height?: number }) {
       </div>
       <div className="p-6 pt-2">
         <div className="flex items-end gap-2" style={{ height }}>
-          {Array.from({ length: 12 }).map((_, i) => (
+          {CHART_BAR_HEIGHTS.map((barHeight, i) => (
             <Skeleton
               key={i}
               className="flex-1 rounded-t-md"
-              style={{ height: `${30 + Math.random() * 60}%` }}
+              style={{ height: `${barHeight}%` }}
             />
           ))}
         </div>
