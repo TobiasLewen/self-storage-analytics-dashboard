@@ -9,6 +9,18 @@ import { usePricingAlerts } from '@/hooks/useForecast'
 import { useUnitMetrics } from '@/hooks/useUnits'
 import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency } from '@/lib/utils'
+import {
+  addSeasonalIndex,
+  generatePricingRecommendations,
+  calculateTotalForecast,
+  findForecastStartMonth,
+} from '@/services/analyticsService'
+import {
+  CHART_COLORS,
+  CHART_DIMENSIONS,
+  Y_AXIS_DOMAINS,
+  LABELS,
+} from '@/constants'
 import { TrendingUp, Calendar, AlertCircle, Lightbulb } from 'lucide-react'
 
 // Chart configurations - defined outside component to avoid recreating on each render
@@ -19,14 +31,14 @@ const FORECAST_AREA_CONFIG = [
 
 const FORECAST_LINE_CONFIG = [
   { dataKey: 'actual', stroke: 'hsl(var(--primary))', dot: { fill: 'hsl(var(--primary))' } },
-  { dataKey: 'forecast', stroke: '#22c55e', strokeDasharray: '5 5', dot: { fill: '#22c55e' } },
+  { dataKey: 'forecast', stroke: CHART_COLORS.success, strokeDasharray: '5 5', dot: { fill: CHART_COLORS.success } },
 ]
 
 const SEASONAL_LINE_CONFIG = [{
   dataKey: 'seasonalIndex',
-  name: 'Saisonindex',
-  stroke: '#8b5cf6',
-  dot: { fill: '#8b5cf6' },
+  name: LABELS.chart.seasonalIndex,
+  stroke: CHART_COLORS.purple,
+  dot: { fill: CHART_COLORS.purple },
 }]
 
 const SEASONAL_REFERENCE_LINE = {
@@ -35,11 +47,12 @@ const SEASONAL_REFERENCE_LINE = {
   strokeDasharray: '3 3',
 }
 
+/** Mapping for forecast chart legend labels */
 const FORECAST_LABELS: Record<string, string> = {
-  actual: 'Ist-Umsatz',
-  forecast: 'Prognose',
-  upperBound: 'Obere Grenze',
-  lowerBound: 'Untere Grenze',
+  actual: LABELS.chart.actual,
+  forecast: LABELS.chart.forecast,
+  upperBound: LABELS.chart.upperBound,
+  lowerBound: LABELS.chart.lowerBound,
 }
 
 const forecastYAxisFormatter = (value: number) => `${(value / 1000).toFixed(0)}k`
@@ -52,7 +65,7 @@ const forecastLegendFormatter = (value: string) => FORECAST_LABELS[value] || val
 const seasonalYAxisFormatter = (value: number) => `${(value * 100).toFixed(0)}%`
 
 const seasonalTooltipFormatter = (value: number) =>
-  [`${(value * 100).toFixed(1)}%`, 'Saisonindex'] as [string, string]
+  [`${(value * 100).toFixed(1)}%`, LABELS.chart.seasonalIndex] as [string, string]
 
 function ForecastSkeleton() {
   return (
@@ -62,7 +75,7 @@ function ForecastSkeleton() {
         <SkeletonCard />
         <SkeletonCard />
       </div>
-      <SkeletonChart height={350} />
+      <SkeletonChart height={CHART_DIMENSIONS.large} />
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-border bg-card">
           <div className="p-6 pb-2">
@@ -74,7 +87,7 @@ function ForecastSkeleton() {
             ))}
           </div>
         </div>
-        <SkeletonChart height={280} />
+        <SkeletonChart height={CHART_DIMENSIONS.compact} />
       </div>
       <div className="rounded-xl border border-border bg-card p-6">
         <Skeleton className="h-6 w-32 mb-4" />
@@ -104,21 +117,19 @@ export function Forecast() {
     refetchMetrics()
   }
 
-  // Show loading state while any data is being fetched
   if (isLoading) {
     return <ForecastSkeleton />
   }
 
-  // Check for errors and provide specific error messages
   if (error) {
     const errorMessages = []
     if (forecastError) errorMessages.push(`Forecast: ${forecastError.message}`)
     if (alertsError) errorMessages.push(`Alerts: ${alertsError.message}`)
     if (unitsError) errorMessages.push(`Units: ${unitsError.message}`)
     if (metricsError) errorMessages.push(`Metrics: ${metricsError.message}`)
-    
+
     console.error('Forecast page error:', errorMessages.join(', '))
-    
+
     return (
       <PageErrorState
         title="Failed to load forecast"
@@ -128,7 +139,6 @@ export function Forecast() {
     )
   }
 
-  // Validate that all required data is present and not empty
   const hasForecastData = forecastData && forecastData.length > 0
   const hasPricingAlerts = pricingAlerts && pricingAlerts.length >= 0
   const hasUnitSizeData = unitSizeData && unitSizeData.length > 0
@@ -140,9 +150,9 @@ export function Forecast() {
     if (!hasPricingAlerts) missingData.push('Pricing alerts')
     if (!hasUnitSizeData) missingData.push('Unit size data')
     if (!hasMonthlyData) missingData.push('Monthly metrics')
-    
+
     console.error('Forecast page missing data:', missingData.join(', '))
-    
+
     return (
       <PageErrorState
         title="Failed to load forecast"
@@ -152,37 +162,11 @@ export function Forecast() {
     )
   }
 
-  // Calculate seasonal trends (using monthly metrics)
-  const seasonalData = monthlyData.map((m, index) => ({
-    ...m,
-    seasonalIndex: 1 + Math.sin((index - 2) * Math.PI / 6) * 0.1,
-  }))
-
-  // Pricing recommendations based on occupancy
-  const pricingRecommendations = unitSizeData.map((size) => {
-    let recommendation = ''
-    let type: 'increase' | 'decrease' | 'maintain' = 'maintain'
-
-    if (size.occupancyRate > 90) {
-      recommendation = `Preiserhöhung um 5-10% möglich bei ${size.size} Einheiten`
-      type = 'increase'
-    } else if (size.occupancyRate < 70) {
-      recommendation = `Preissenkung um 5% empfohlen für ${size.size} Einheiten`
-      type = 'decrease'
-    } else {
-      recommendation = `Preise für ${size.size} Einheiten beibehalten`
-      type = 'maintain'
-    }
-
-    return { size: size.size, occupancy: size.occupancyRate, recommendation, type }
-  })
-
-  // Calculate 3-month forecast summary
-  const forecastOnly = forecastData.filter((d) => d.forecast)
-  const totalForecast = forecastOnly.reduce((sum, d) => sum + (d.forecast || 0), 0)
-
-  // Find forecast start month for reference line
-  const forecastStartMonth = forecastData.find((d) => d.forecast)?.month
+  // Use service layer for business logic
+  const seasonalData = addSeasonalIndex(monthlyData)
+  const pricingRecommendations = generatePricingRecommendations(unitSizeData)
+  const totalForecast = calculateTotalForecast(forecastData)
+  const forecastStartMonth = findForecastStartMonth(forecastData)
 
   // Reference line depends on data, so computed inline
   const forecastReferenceLine = {
@@ -253,12 +237,13 @@ export function Forecast() {
             areas={FORECAST_AREA_CONFIG}
             lines={FORECAST_LINE_CONFIG}
             xAxisKey="month"
-            height={350}
+            height={CHART_DIMENSIONS.large}
             yAxisFormatter={forecastYAxisFormatter}
             tooltipFormatter={forecastTooltipFormatter}
             showLegend
             legendFormatter={forecastLegendFormatter}
             referenceLine={forecastReferenceLine}
+            ariaLabel="Area chart showing 3-month revenue forecast with confidence intervals"
           />
         </CardContent>
       </Card>
@@ -311,11 +296,12 @@ export function Forecast() {
               data={seasonalData}
               lines={SEASONAL_LINE_CONFIG}
               xAxisKey="month"
-              height={280}
-              yAxisDomain={[0.85, 1.15]}
+              height={CHART_DIMENSIONS.compact}
+              yAxisDomain={Y_AXIS_DOMAINS.seasonalIndex}
               yAxisFormatter={seasonalYAxisFormatter}
               tooltipFormatter={seasonalTooltipFormatter}
               referenceLine={SEASONAL_REFERENCE_LINE}
+              ariaLabel="Line chart showing seasonal trends over 12 months"
             />
           </CardContent>
         </Card>

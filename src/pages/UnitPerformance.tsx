@@ -14,19 +14,45 @@ import { PageErrorState } from '@/components/ui/error-state'
 import { useUnitMetrics } from '@/hooks/useUnits'
 import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency, formatPercent } from '@/lib/utils'
+import { getOccupancyStatus } from '@/lib/metrics'
+import {
+  findMostProfitableSize,
+  findLeastProfitableSize,
+  calculateUnitTurnoverRate,
+  compareUnitRevenueToAverage,
+  getTrendLabel,
+} from '@/services/analyticsService'
+import {
+  CHART_COLOR_PALETTE,
+  CHART_DIMENSIONS,
+  Y_AXIS_DOMAINS,
+  LABELS,
+} from '@/constants'
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Minus, CheckCircle2, AlertCircle, XCircle } from 'lucide-react'
-
-const COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
 
 // Chart configurations - defined outside component
 const OCCUPANCY_BAR_CONFIG = [{
   dataKey: 'occupancyRate',
-  fill: COLORS[0],
+  fill: CHART_COLOR_PALETTE[0],
   radius: [4, 4, 0, 0] as [number, number, number, number],
 }]
 
-const occupancyTooltipFormatter = (value: number) => [`${value}%`, 'Belegung'] as [string, string]
+const occupancyTooltipFormatter = (value: number) => [`${value}%`, LABELS.chart.occupancy] as [string, string]
 const occupancyYAxisFormatter = (value: number) => `${value}%`
+
+/** Occupancy status icon mapping */
+const OccupancyIcon = {
+  high: CheckCircle2,
+  medium: AlertCircle,
+  low: XCircle,
+} as const
+
+/** Occupancy status color class mapping */
+const OCCUPANCY_COLOR_CLASSES = {
+  high: 'text-green-600',
+  medium: 'text-yellow-600',
+  low: 'text-red-600',
+} as const
 
 function UnitPerformanceSkeleton() {
   return (
@@ -36,7 +62,7 @@ function UnitPerformanceSkeleton() {
         <SkeletonCard />
         <SkeletonCard />
       </div>
-      <SkeletonChart height={300} />
+      <SkeletonChart height={CHART_DIMENSIONS.default} />
       <SkeletonTable rows={5} />
     </div>
   )
@@ -54,19 +80,17 @@ export function UnitPerformance() {
     refetchMetrics()
   }
 
-  // Show loading state while any data is being fetched
   if (isLoading) {
     return <UnitPerformanceSkeleton />
   }
 
-  // Check for errors and provide specific error messages
   if (error) {
     const errorMessages = []
     if (unitsError) errorMessages.push(`Units: ${unitsError.message}`)
     if (metricsError) errorMessages.push(`Metrics: ${metricsError.message}`)
-    
+
     console.error('Unit performance error:', errorMessages.join(', '))
-    
+
     return (
       <PageErrorState
         title="Failed to load unit data"
@@ -76,7 +100,6 @@ export function UnitPerformance() {
     )
   }
 
-  // Validate that all required data is present and not empty
   const hasUnitSizeData = unitSizeData && unitSizeData.length > 0
   const hasMonthlyData = monthlyData && monthlyData.length > 0
 
@@ -84,9 +107,9 @@ export function UnitPerformance() {
     const missingData = []
     if (!hasUnitSizeData) missingData.push('Unit size data')
     if (!hasMonthlyData) missingData.push('Monthly metrics')
-    
+
     console.error('Unit performance missing data:', missingData.join(', '))
-    
+
     return (
       <PageErrorState
         title="Failed to load unit data"
@@ -96,18 +119,13 @@ export function UnitPerformance() {
     )
   }
 
-  // At this point, all data is guaranteed to be present
   const safeUnitSizeData = unitSizeData!
   const safeMonthlyData = monthlyData!
 
-  // Calculate most/least profitable
-  const sortedByRevenue = [...safeUnitSizeData].sort((a, b) => b.revenuePerSqm - a.revenuePerSqm)
-  const mostProfitable = sortedByRevenue[0]
-  const leastProfitable = sortedByRevenue[sortedByRevenue.length - 1]
-
-  // Calculate turnover rate (simplified: new customers / total customers)
-  const lastMonth = safeMonthlyData[safeMonthlyData.length - 1]
-  const turnoverRate = ((lastMonth.newCustomers + lastMonth.churnedCustomers) / lastMonth.occupiedUnits) * 100
+  // Use service layer for business logic
+  const mostProfitable = findMostProfitableSize(safeUnitSizeData)
+  const leastProfitable = findLeastProfitableSize(safeUnitSizeData)
+  const turnoverRate = calculateUnitTurnoverRate(safeMonthlyData)
 
   return (
     <div className="space-y-6">
@@ -173,11 +191,12 @@ export function UnitPerformance() {
             data={safeUnitSizeData}
             bars={OCCUPANCY_BAR_CONFIG}
             xAxisKey="size"
-            height={300}
-            yAxisDomain={[0, 100]}
+            height={CHART_DIMENSIONS.default}
+            yAxisDomain={Y_AXIS_DOMAINS.percentage}
             yAxisFormatter={occupancyYAxisFormatter}
             tooltipFormatter={occupancyTooltipFormatter}
-            cellColors={COLORS}
+            cellColors={[...CHART_COLOR_PALETTE]}
+            ariaLabel="Bar chart showing occupancy rate by unit size"
           />
         </CardContent>
       </Card>
@@ -203,15 +222,17 @@ export function UnitPerformance() {
             </TableHeader>
             <TableBody>
               {safeUnitSizeData.map((item, index) => {
-                const avgRevenuePerSqm = safeUnitSizeData.reduce((sum, i) => sum + i.revenuePerSqm, 0) / safeUnitSizeData.length
-                const isAboveAvg = item.revenuePerSqm > avgRevenuePerSqm
+                const occupancyStatus = getOccupancyStatus(item.occupancyRate)
+                const OccupancyStatusIcon = OccupancyIcon[occupancyStatus]
+                const comparison = compareUnitRevenueToAverage(item.revenuePerSqm, safeUnitSizeData)
+                const isAboveAvg = comparison === 'above'
 
                 return (
                   <TableRow key={item.size}>
                     <TableCell>
                       <Badge
                         variant="outline"
-                        style={{ borderColor: COLORS[index % COLORS.length] }}
+                        style={{ borderColor: CHART_COLOR_PALETTE[index % CHART_COLOR_PALETTE.length] }}
                       >
                         {item.size}
                       </Badge>
@@ -220,23 +241,11 @@ export function UnitPerformance() {
                     <TableCell className="text-right">{item.occupiedUnits}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        {/* Icons for colorblind accessibility */}
-                        {item.occupancyRate >= 85 ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" aria-hidden="true" />
-                        ) : item.occupancyRate >= 70 ? (
-                          <AlertCircle className="h-4 w-4 text-yellow-600" aria-hidden="true" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-red-600" aria-hidden="true" />
-                        )}
-                        <span
-                          className={
-                            item.occupancyRate >= 85
-                              ? 'text-green-600'
-                              : item.occupancyRate >= 70
-                              ? 'text-yellow-600'
-                              : 'text-red-600'
-                          }
-                        >
+                        <OccupancyStatusIcon
+                          className={`h-4 w-4 ${OCCUPANCY_COLOR_CLASSES[occupancyStatus]}`}
+                          aria-hidden="true"
+                        />
+                        <span className={OCCUPANCY_COLOR_CLASSES[occupancyStatus]}>
                           {formatPercent(item.occupancyRate)}
                         </span>
                       </div>
@@ -254,12 +263,12 @@ export function UnitPerformance() {
                       {isAboveAvg ? (
                         <div className="flex items-center text-green-600">
                           <ArrowUpRight className="h-4 w-4" />
-                          <span className="text-xs">Über Ø</span>
+                          <span className="text-xs">{getTrendLabel('above')}</span>
                         </div>
                       ) : (
                         <div className="flex items-center text-red-600">
                           <ArrowDownRight className="h-4 w-4" />
-                          <span className="text-xs">Unter Ø</span>
+                          <span className="text-xs">{getTrendLabel('below')}</span>
                         </div>
                       )}
                     </TableCell>
