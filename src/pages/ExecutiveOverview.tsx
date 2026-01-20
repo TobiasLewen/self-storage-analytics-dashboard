@@ -1,18 +1,7 @@
-import { useCallback } from 'react'
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts'
+import { useCallback, useMemo } from 'react'
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { MemoizedLineChart, MemoizedBarChart } from '@/components/charts/MemoizedCharts'
 import { SkeletonCard, SkeletonChart } from '@/components/ui/skeleton'
 import { PageErrorState } from '@/components/ui/error-state'
 import { useDataFetch } from '@/hooks/useDataFetch'
@@ -67,6 +56,44 @@ export function ExecutiveOverview() {
 
   const { summary, unitSizeData, monthlyData } = data
 
+  // Memoize chart configurations to prevent unnecessary re-renders
+  const revenueLineConfig = useMemo(() => [{
+    dataKey: 'revenue',
+    stroke: 'hsl(var(--primary))',
+    dot: { fill: 'hsl(var(--primary))' },
+  }], [])
+
+  const unitSizeBarConfig = useMemo(() => [
+    { dataKey: 'occupiedUnits', name: 'Belegt', fill: 'hsl(var(--primary))', stackId: 'a' },
+    { dataKey: 'availableUnits', name: 'Verfügbar', fill: 'hsl(var(--muted))', stackId: 'a' },
+  ], [])
+
+  const occupancyLineConfig = useMemo(() => [{
+    dataKey: 'occupancyRate',
+    stroke: 'hsl(var(--primary))',
+    dot: { fill: 'hsl(var(--primary))' },
+  }], [])
+
+  const revenueTooltipFormatter = useCallback(
+    (value: number) => [formatCurrency(value), 'Umsatz'] as [string, string],
+    []
+  )
+
+  const occupancyTooltipFormatter = useCallback(
+    (value: number) => [`${value}%`, 'Belegung'] as [string, string],
+    []
+  )
+
+  const revenueYAxisFormatter = useCallback(
+    (value: number) => `${(value / 1000).toFixed(0)}k`,
+    []
+  )
+
+  const occupancyYAxisFormatter = useCallback(
+    (value: number) => `${value}%`,
+    []
+  )
+
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
@@ -107,38 +134,14 @@ export function ExecutiveOverview() {
             <CardTitle>Umsatzentwicklung (12 Monate)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis
-                    dataKey="month"
-                    className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <YAxis
-                    className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                    formatter={(value) => [formatCurrency(Number(value)), 'Umsatz']}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2}
-                    dot={{ fill: 'hsl(var(--primary))' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <MemoizedLineChart
+              data={monthlyData}
+              lines={revenueLineConfig}
+              xAxisKey="month"
+              height={300}
+              yAxisFormatter={revenueYAxisFormatter}
+              tooltipFormatter={revenueTooltipFormatter}
+            />
           </CardContent>
         </Card>
 
@@ -148,45 +151,15 @@ export function ExecutiveOverview() {
             <CardTitle>Einheiten nach Größe</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={unitSizeData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis
-                    type="number"
-                    className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="size"
-                    className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                    width={50}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <Legend />
-                  <Bar
-                    dataKey="occupiedUnits"
-                    name="Belegt"
-                    fill="hsl(var(--primary))"
-                    stackId="a"
-                  />
-                  <Bar
-                    dataKey="availableUnits"
-                    name="Verfügbar"
-                    fill="hsl(var(--muted))"
-                    stackId="a"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <MemoizedBarChart
+              data={unitSizeData}
+              bars={unitSizeBarConfig}
+              xAxisKey="size"
+              height={300}
+              layout="vertical"
+              yAxisWidth={50}
+              showLegend
+            />
           </CardContent>
         </Card>
       </div>
@@ -197,39 +170,15 @@ export function ExecutiveOverview() {
           <CardTitle>Belegungsrate (12 Monate)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis
-                  dataKey="month"
-                  className="text-xs"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                />
-                <YAxis
-                  className="text-xs"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  domain={[70, 100]}
-                  tickFormatter={(value) => `${value}%`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                  formatter={(value) => [`${value}%`, 'Belegung']}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="occupancyRate"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--primary))' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <MemoizedLineChart
+            data={monthlyData}
+            lines={occupancyLineConfig}
+            xAxisKey="month"
+            height={250}
+            yAxisDomain={[70, 100]}
+            yAxisFormatter={occupancyYAxisFormatter}
+            tooltipFormatter={occupancyTooltipFormatter}
+          />
         </CardContent>
       </Card>
     </div>

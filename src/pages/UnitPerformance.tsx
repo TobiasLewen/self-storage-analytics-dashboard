@@ -1,15 +1,6 @@
-import { useCallback } from 'react'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts'
+import { useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { MemoizedBarChart } from '@/components/charts/MemoizedCharts'
 import {
   Table,
   TableBody,
@@ -75,6 +66,23 @@ export function UnitPerformance() {
   const lastMonth = monthlyData[monthlyData.length - 1]
   const turnoverRate = ((lastMonth.newCustomers + lastMonth.churnedCustomers) / lastMonth.occupiedUnits) * 100
 
+  // Memoize chart configurations
+  const occupancyBarConfig = useMemo(() => [{
+    dataKey: 'occupancyRate',
+    fill: COLORS[0],
+    radius: [4, 4, 0, 0] as [number, number, number, number],
+  }], [])
+
+  const occupancyTooltipFormatter = useCallback(
+    (value: number) => [`${value}%`, 'Belegung'] as [string, string],
+    []
+  )
+
+  const occupancyYAxisFormatter = useCallback(
+    (value: number) => `${value}%`,
+    []
+  )
+
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
@@ -135,37 +143,16 @@ export function UnitPerformance() {
           <CardTitle>Belegungsrate nach Größe</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={unitSizeData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis
-                  dataKey="size"
-                  className="text-xs"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                />
-                <YAxis
-                  className="text-xs"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  domain={[0, 100]}
-                  tickFormatter={(value) => `${value}%`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                  formatter={(value) => [`${value}%`, 'Belegung']}
-                />
-                <Bar dataKey="occupancyRate" radius={[4, 4, 0, 0]}>
-                  {unitSizeData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <MemoizedBarChart
+            data={unitSizeData}
+            bars={occupancyBarConfig}
+            xAxisKey="size"
+            height={300}
+            yAxisDomain={[0, 100]}
+            yAxisFormatter={occupancyYAxisFormatter}
+            tooltipFormatter={occupancyTooltipFormatter}
+            cellColors={COLORS}
+          />
         </CardContent>
       </Card>
 

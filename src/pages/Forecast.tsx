@@ -1,18 +1,6 @@
-import { useCallback } from 'react'
-import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  ReferenceLine,
-} from 'recharts'
+import { useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { MemoizedAreaChart, MemoizedLineChart } from '@/components/charts/MemoizedCharts'
 import { AlertCard } from '@/components/cards/AlertCard'
 import { Badge } from '@/components/ui/badge'
 import { SkeletonCard, SkeletonChart, Skeleton } from '@/components/ui/skeleton'
@@ -111,6 +99,76 @@ export function Forecast() {
   const forecastOnly = forecastData.filter((d) => d.forecast)
   const totalForecast = forecastOnly.reduce((sum, d) => sum + (d.forecast || 0), 0)
 
+  // Find forecast start month for reference line
+  const forecastStartMonth = useMemo(() =>
+    forecastData.find((d) => d.forecast)?.month,
+    [forecastData]
+  )
+
+  // Memoize chart configurations
+  const forecastAreaConfig = useMemo(() => [
+    { dataKey: 'upperBound', stroke: 'none' as const, fill: 'hsl(var(--primary))', fillOpacity: 0.1 },
+    { dataKey: 'lowerBound', stroke: 'none' as const, fill: 'hsl(var(--background))', fillOpacity: 1 },
+  ], [])
+
+  const forecastLineConfig = useMemo(() => [
+    { dataKey: 'actual', stroke: 'hsl(var(--primary))', dot: { fill: 'hsl(var(--primary))' } },
+    { dataKey: 'forecast', stroke: '#22c55e', strokeDasharray: '5 5', dot: { fill: '#22c55e' } },
+  ], [])
+
+  const forecastReferenceLine = useMemo(() => ({
+    x: forecastStartMonth,
+    stroke: 'hsl(var(--muted-foreground))',
+    strokeDasharray: '5 5',
+    label: { value: 'Prognose Start', position: 'top', fill: 'hsl(var(--muted-foreground))' },
+  }), [forecastStartMonth])
+
+  const forecastYAxisFormatter = useCallback(
+    (value: number) => `${(value / 1000).toFixed(0)}k`,
+    []
+  )
+
+  const forecastLabels: Record<string, string> = {
+    actual: 'Ist-Umsatz',
+    forecast: 'Prognose',
+    upperBound: 'Obere Grenze',
+    lowerBound: 'Untere Grenze',
+  }
+
+  const forecastTooltipFormatter = useCallback(
+    (value: number, name: string) =>
+      [formatCurrency(value), forecastLabels[name] || name] as [string, string],
+    []
+  )
+
+  const forecastLegendFormatter = useCallback(
+    (value: string) => forecastLabels[value] || value,
+    []
+  )
+
+  const seasonalLineConfig = useMemo(() => [{
+    dataKey: 'seasonalIndex',
+    name: 'Saisonindex',
+    stroke: '#8b5cf6',
+    dot: { fill: '#8b5cf6' },
+  }], [])
+
+  const seasonalReferenceLine = useMemo(() => ({
+    y: 1,
+    stroke: 'hsl(var(--muted-foreground))',
+    strokeDasharray: '3 3',
+  }), [])
+
+  const seasonalYAxisFormatter = useCallback(
+    (value: number) => `${(value * 100).toFixed(0)}%`,
+    []
+  )
+
+  const seasonalTooltipFormatter = useCallback(
+    (value: number) => [`${(value * 100).toFixed(1)}%`, 'Saisonindex'] as [string, string],
+    []
+  )
+
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
@@ -167,85 +225,18 @@ export function Forecast() {
           <CardTitle>3-Monats Umsatzprognose</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={forecastData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis
-                  dataKey="month"
-                  className="text-xs"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                />
-                <YAxis
-                  className="text-xs"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
-                  formatter={(value, name) => {
-                    const labels: Record<string, string> = {
-                      actual: 'Ist-Umsatz',
-                      forecast: 'Prognose',
-                      upperBound: 'Obere Grenze',
-                      lowerBound: 'Untere Grenze',
-                    }
-                    return [formatCurrency(Number(value)), labels[String(name)] || String(name)]
-                  }}
-                />
-                <Legend
-                  formatter={(value) => {
-                    const labels: Record<string, string> = {
-                      actual: 'Ist-Umsatz',
-                      forecast: 'Prognose',
-                      upperBound: 'Obere Grenze',
-                      lowerBound: 'Untere Grenze',
-                    }
-                    return labels[value] || value
-                  }}
-                />
-                <ReferenceLine
-                  x={forecastData.find((d) => d.forecast)?.month}
-                  stroke="hsl(var(--muted-foreground))"
-                  strokeDasharray="5 5"
-                  label={{ value: 'Prognose Start', position: 'top', fill: 'hsl(var(--muted-foreground))' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="upperBound"
-                  stroke="none"
-                  fill="hsl(var(--primary))"
-                  fillOpacity={0.1}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="lowerBound"
-                  stroke="none"
-                  fill="hsl(var(--background))"
-                  fillOpacity={1}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="actual"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(var(--primary))' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="forecast"
-                  stroke="#22c55e"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ fill: '#22c55e' }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          <MemoizedAreaChart
+            data={forecastData}
+            areas={forecastAreaConfig}
+            lines={forecastLineConfig}
+            xAxisKey="month"
+            height={350}
+            yAxisFormatter={forecastYAxisFormatter}
+            tooltipFormatter={forecastTooltipFormatter}
+            showLegend
+            legendFormatter={forecastLegendFormatter}
+            referenceLine={forecastReferenceLine}
+          />
         </CardContent>
       </Card>
 
@@ -293,44 +284,16 @@ export function Forecast() {
             <CardTitle>Saisonale Trends</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={seasonalData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis
-                    dataKey="month"
-                    className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <YAxis
-                    className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                    domain={[0.85, 1.15]}
-                    tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                    formatter={(value) => [
-                      `${(Number(value) * 100).toFixed(1)}%`,
-                      'Saisonindex',
-                    ]}
-                  />
-                  <ReferenceLine y={1} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
-                  <Line
-                    type="monotone"
-                    dataKey="seasonalIndex"
-                    name="Saisonindex"
-                    stroke="#8b5cf6"
-                    strokeWidth={2}
-                    dot={{ fill: '#8b5cf6' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <MemoizedLineChart
+              data={seasonalData}
+              lines={seasonalLineConfig}
+              xAxisKey="month"
+              height={280}
+              yAxisDomain={[0.85, 1.15]}
+              yAxisFormatter={seasonalYAxisFormatter}
+              tooltipFormatter={seasonalTooltipFormatter}
+              referenceLine={seasonalReferenceLine}
+            />
           </CardContent>
         </Card>
       </div>

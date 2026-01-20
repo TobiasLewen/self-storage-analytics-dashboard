@@ -1,19 +1,7 @@
-import { useCallback } from 'react'
-import {
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts'
+import { useCallback, useMemo } from 'react'
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { MemoizedLineChart, MemoizedPieChart } from '@/components/charts/MemoizedCharts'
 import {
   Table,
   TableBody,
@@ -103,6 +91,29 @@ export function CustomerAnalytics() {
     netGrowth: m.newCustomers - m.churnedCustomers,
   }))
 
+  // Prepare pie chart data with translated names
+  const pieChartData = useMemo(() =>
+    segments.map(s => ({ ...s, name: s.type === 'private' ? 'Privat' : 'Geschäft' })),
+    [segments]
+  )
+
+  // Memoize chart configurations
+  const customerTrendLineConfig = useMemo(() => [
+    { dataKey: 'newCustomers', name: 'Neue Kunden', stroke: '#22c55e', dot: { fill: '#22c55e' } },
+    { dataKey: 'churnedCustomers', name: 'Abgegangen', stroke: '#ef4444', dot: { fill: '#ef4444' } },
+  ], [])
+
+  const pieLabelFormatter = useCallback(
+    (entry: { name: string; percent?: number }) =>
+      `${entry.name}: ${((entry.percent ?? 0) * 100).toFixed(0)}%`,
+    []
+  )
+
+  const pieTooltipFormatter = useCallback(
+    (value: number) => [`${value} Kunden`, ''] as [string, string],
+    []
+  )
+
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
@@ -141,46 +152,13 @@ export function CustomerAnalytics() {
             <CardTitle>Kundenentwicklung (12 Monate)</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={customerTrendData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis
-                    dataKey="month"
-                    className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <YAxis
-                    className="text-xs"
-                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                  />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="newCustomers"
-                    name="Neue Kunden"
-                    stroke="#22c55e"
-                    strokeWidth={2}
-                    dot={{ fill: '#22c55e' }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="churnedCustomers"
-                    name="Abgegangen"
-                    stroke="#ef4444"
-                    strokeWidth={2}
-                    dot={{ fill: '#ef4444' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <MemoizedLineChart
+              data={customerTrendData}
+              lines={customerTrendLineConfig}
+              xAxisKey="month"
+              height={300}
+              showLegend
+            />
           </CardContent>
         </Card>
 
@@ -190,35 +168,15 @@ export function CustomerAnalytics() {
             <CardTitle>Kundensegmentierung</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={segments.map(s => ({ ...s, name: s.type === 'private' ? 'Privat' : 'Geschäft' }))}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="count"
-                    nameKey="name"
-                    label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
-                  >
-                    {segments.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px',
-                    }}
-                    formatter={(value) => [`${value} Kunden`, '']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <MemoizedPieChart
+              data={pieChartData}
+              dataKey="count"
+              nameKey="name"
+              height={300}
+              colors={COLORS}
+              labelFormatter={pieLabelFormatter}
+              tooltipFormatter={pieTooltipFormatter}
+            />
             <div className="mt-4 flex justify-center gap-8">
               {segments.map((segment, index) => (
                 <div key={segment.type} className="flex items-center gap-2">
