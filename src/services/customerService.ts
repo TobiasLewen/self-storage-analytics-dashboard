@@ -1,16 +1,20 @@
-import { api } from './api'
+import { customers, getCustomerSegments } from '../data/mockData'
 import type { Customer, CustomerSegment } from '../data/types'
 
 export const customerService = {
   getCustomers(): Promise<Customer[]> {
-    return api.get<Customer[]>('/customers')
+    return Promise.resolve(customers)
   },
 
   getCustomerById(id: string): Promise<Customer> {
-    return api.get<Customer>(`/customers/${id}`)
+    const customer = customers.find(c => c.id === id)
+    if (!customer) {
+      return Promise.reject(new Error(`Customer with id ${id} not found`))
+    }
+    return Promise.resolve(customer)
   },
 
   getCustomerSegments(): Promise<CustomerSegment[]> {
-    return api.get<CustomerSegment[]>('/customers/segments')
+    return Promise.resolve(getCustomerSegments())
   },
 }

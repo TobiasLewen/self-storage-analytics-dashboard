@@ -1,12 +1,12 @@
-import { api } from './api'
+import { getForecastData, getPricingAlerts } from '../data/mockData'
 import type { ForecastData, PricingAlert } from '../data/types'
 
 export const forecastService = {
   getForecast(): Promise<ForecastData[]> {
-    return api.get<ForecastData[]>('/forecast')
+    return Promise.resolve(getForecastData())
   },
 
   getPricingAlerts(): Promise<PricingAlert[]> {
-    return api.get<PricingAlert[]>('/alerts/pricing')
+    return Promise.resolve(getPricingAlerts())
   },
 }

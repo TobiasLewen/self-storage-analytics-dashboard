@@ -1,12 +1,12 @@
-import { api } from './api'
+import { monthlyMetrics, getDashboardSummary } from '../data/mockData'
 import type { MonthlyMetrics, DashboardSummary } from '../data/types'
 
 export const metricsService = {
   getMonthlyMetrics(): Promise<MonthlyMetrics[]> {
-    return api.get<MonthlyMetrics[]>('/metrics/monthly')
+    return Promise.resolve(monthlyMetrics)
   },
 
   getDashboardSummary(): Promise<DashboardSummary> {
-    return api.get<DashboardSummary>('/dashboard/summary')
+    return Promise.resolve(getDashboardSummary())
   },
 }
