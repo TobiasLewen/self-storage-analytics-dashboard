@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedBarChart } from '@/components/charts/MemoizedCharts'
 import {
@@ -12,8 +12,8 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { SkeletonCard, SkeletonChart, SkeletonTable } from '@/components/ui/skeleton'
 import { PageErrorState } from '@/components/ui/error-state'
-import { useDataFetch } from '@/hooks/useDataFetch'
-import { getUnitSizeMetrics, monthlyMetrics } from '@/data/mockData'
+import { useUnitMetrics } from '@/hooks/useUnits'
+import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency, formatPercent } from '@/lib/utils'
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react'
 
@@ -44,18 +44,22 @@ function UnitPerformanceSkeleton() {
 }
 
 export function UnitPerformance() {
-  const fetchData = useCallback(() => ({
-    unitSizeData: getUnitSizeMetrics(),
-    monthlyData: monthlyMetrics,
-  }), [])
+  const { metrics: unitSizeData, isLoading: unitsLoading, error: unitsError, refetch: refetchUnits } = useUnitMetrics()
+  const { metrics: monthlyData, isLoading: metricsLoading, error: metricsError, refetch: refetchMetrics } = useMonthlyMetrics()
 
-  const { data, isLoading, error, retry } = useDataFetch(fetchData)
+  const isLoading = unitsLoading || metricsLoading
+  const error = unitsError || metricsError
+
+  const retry = () => {
+    refetchUnits()
+    refetchMetrics()
+  }
 
   if (isLoading) {
     return <UnitPerformanceSkeleton />
   }
 
-  if (error || !data) {
+  if (error || !unitSizeData || !monthlyData) {
     return (
       <PageErrorState
         title="Failed to load unit data"
@@ -64,8 +68,6 @@ export function UnitPerformance() {
       />
     )
   }
-
-  const { unitSizeData, monthlyData } = data
 
   // Calculate most/least profitable
   const sortedByRevenue = [...unitSizeData].sort((a, b) => b.revenuePerSqm - a.revenuePerSqm)

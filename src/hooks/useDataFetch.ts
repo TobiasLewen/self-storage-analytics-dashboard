@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useQuery, type UseQueryResult } from '@tanstack/react-query'
 
 interface UseDataFetchOptions {
   simulateError?: boolean
   errorRate?: number
+  queryKey?: unknown[]
+  enabled?: boolean
 }
 
 interface UseDataFetchResult<T> {
@@ -12,21 +14,25 @@ interface UseDataFetchResult<T> {
   retry: () => void
 }
 
+/**
+ * useDataFetch Hook with React Query
+ * 
+ * This hook provides data fetching with automatic caching, refetching,
+ * and deduplication using React Query.
+ * 
+ * @param fetchFn - Function that fetches data
+ * @param options - Configuration options
+ * @returns Object containing data, loading state, error, and retry function
+ */
 export function useDataFetch<T>(
   fetchFn: () => T | Promise<T>,
   options: UseDataFetchOptions = {}
 ): UseDataFetchResult<T> {
-  const { simulateError = false, errorRate = 0 } = options
-  const [data, setData] = useState<T | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-  const [retryCount, setRetryCount] = useState(0)
+  const { simulateError = false, errorRate = 0, queryKey = ['data'], enabled = true } = options
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
+  const query = useQuery({
+    queryKey,
+    queryFn: async () => {
       // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 800))
 
@@ -35,22 +41,17 @@ export function useDataFetch<T>(
         throw new Error('Failed to fetch data. Please try again.')
       }
 
-      const result = await fetchFn()
-      setData(result)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('An unknown error occurred'))
-    } finally {
-      setIsLoading(false)
-    }
-  }, [fetchFn, simulateError, errorRate])
+      return await fetchFn()
+    },
+    enabled,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  })
 
-  useEffect(() => {
-    fetchData()
-  }, [fetchData, retryCount])
-
-  const retry = useCallback(() => {
-    setRetryCount((c) => c + 1)
-  }, [])
-
-  return { data, isLoading, error, retry }
+  return {
+    data: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+    retry: query.refetch,
+  }
 }

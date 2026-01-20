@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { forecastService } from '../services/forecastService'
+import { forecastKeys } from '../lib/queryKeys'
 import type { ForecastData, PricingAlert } from '../data/types'
 
 interface UseForecastResult {
@@ -9,29 +10,25 @@ interface UseForecastResult {
   refetch: () => void
 }
 
+/**
+ * useForecast Hook with React Query
+ * 
+ * Fetches forecast data with automatic caching and refetching.
+ * Data is cached for 5 minutes and refetched on window focus or reconnect.
+ */
 export function useForecast(): UseForecastResult {
-  const [forecast, setForecast] = useState<ForecastData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const query = useQuery({
+    queryKey: forecastKeys.data(),
+    queryFn: () => forecastService.getForecast(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-  const fetchForecast = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await forecastService.getForecast()
-      setForecast(data)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch forecast'))
-    } finally {
-      setIsLoading(false)
-    }
+  return {
+    forecast: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+    refetch: query.refetch,
   }
-
-  useEffect(() => {
-    fetchForecast()
-  }, [])
-
-  return { forecast, isLoading, error, refetch: fetchForecast }
 }
 
 interface UsePricingAlertsResult {
@@ -41,27 +38,23 @@ interface UsePricingAlertsResult {
   refetch: () => void
 }
 
+/**
+ * usePricingAlerts Hook with React Query
+ * 
+ * Fetches pricing alerts data with automatic caching and refetching.
+ * Data is cached for 5 minutes and refetched on window focus or reconnect.
+ */
 export function usePricingAlerts(): UsePricingAlertsResult {
-  const [alerts, setAlerts] = useState<PricingAlert[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const query = useQuery({
+    queryKey: forecastKeys.alerts(),
+    queryFn: () => forecastService.getPricingAlerts(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-  const fetchAlerts = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await forecastService.getPricingAlerts()
-      setAlerts(data)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch pricing alerts'))
-    } finally {
-      setIsLoading(false)
-    }
+  return {
+    alerts: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+    refetch: query.refetch,
   }
-
-  useEffect(() => {
-    fetchAlerts()
-  }, [])
-
-  return { alerts, isLoading, error, refetch: fetchAlerts }
 }

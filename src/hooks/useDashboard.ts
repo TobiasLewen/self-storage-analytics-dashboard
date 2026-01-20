@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { metricsService } from '../services/metricsService'
+import { dashboardKeys } from '../lib/queryKeys'
 import type { DashboardSummary } from '../data/types'
 
 interface UseDashboardSummaryResult {
@@ -9,27 +10,23 @@ interface UseDashboardSummaryResult {
   refetch: () => void
 }
 
+/**
+ * useDashboardSummary Hook with React Query
+ * 
+ * Fetches dashboard summary data with automatic caching and refetching.
+ * Data is cached for 5 minutes and refetched on window focus or reconnect.
+ */
 export function useDashboardSummary(): UseDashboardSummaryResult {
-  const [summary, setSummary] = useState<DashboardSummary | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const query = useQuery({
+    queryKey: dashboardKeys.summary(),
+    queryFn: () => metricsService.getDashboardSummary(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-  const fetchSummary = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await metricsService.getDashboardSummary()
-      setSummary(data)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch dashboard summary'))
-    } finally {
-      setIsLoading(false)
-    }
+  return {
+    summary: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+    refetch: query.refetch,
   }
-
-  useEffect(() => {
-    fetchSummary()
-  }, [])
-
-  return { summary, isLoading, error, refetch: fetchSummary }
 }

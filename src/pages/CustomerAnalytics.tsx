@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useMemo } from 'react'
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedLineChart, MemoizedPieChart } from '@/components/charts/MemoizedCharts'
@@ -13,14 +13,11 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { SkeletonCard, SkeletonChart, SkeletonPieChart, SkeletonTable } from '@/components/ui/skeleton'
 import { PageErrorState } from '@/components/ui/error-state'
-import { useDataFetch } from '@/hooks/useDataFetch'
-import {
-  getDashboardSummary,
-  getCustomerSegments,
-  monthlyMetrics,
-  customers,
-  units,
-} from '@/data/mockData'
+import { useDashboardSummary } from '@/hooks/useDashboard'
+import { useCustomerSegments } from '@/hooks/useCustomers'
+import { useMonthlyMetrics } from '@/hooks/useMetrics'
+import { useCustomers } from '@/hooks/useCustomers'
+import { useUnits } from '@/hooks/useUnits'
 import { formatCurrency, formatPercent } from '@/lib/utils'
 import { Users, UserMinus, Euro, Building2 } from 'lucide-react'
 
@@ -56,21 +53,28 @@ function CustomerAnalyticsSkeleton() {
 }
 
 export function CustomerAnalytics() {
-  const fetchData = useCallback(() => ({
-    summary: getDashboardSummary(),
-    segments: getCustomerSegments(),
-    monthlyData: monthlyMetrics,
-    customersData: customers,
-    unitsData: units,
-  }), [])
+  const { summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary } = useDashboardSummary()
+  const { segments, isLoading: segmentsLoading, error: segmentsError, refetch: refetchSegments } = useCustomerSegments()
+  const { metrics: monthlyData, isLoading: metricsLoading, error: metricsError, refetch: refetchMetrics } = useMonthlyMetrics()
+  const { customers: customersData, isLoading: customersLoading, error: customersError, refetch: refetchCustomers } = useCustomers()
+  const { units: unitsData, isLoading: unitsLoading, error: unitsError, refetch: refetchUnits } = useUnits()
 
-  const { data, isLoading, error, retry } = useDataFetch(fetchData)
+  const isLoading = summaryLoading || segmentsLoading || metricsLoading || customersLoading || unitsLoading
+  const error = summaryError || segmentsError || metricsError || customersError || unitsError
+
+  const retry = () => {
+    refetchSummary()
+    refetchSegments()
+    refetchMetrics()
+    refetchCustomers()
+    refetchUnits()
+  }
 
   if (isLoading) {
     return <CustomerAnalyticsSkeleton />
   }
 
-  if (error || !data) {
+  if (error || !summary || !segments || !monthlyData || !customersData || !unitsData) {
     return (
       <PageErrorState
         title="Failed to load customer data"
@@ -79,8 +83,6 @@ export function CustomerAnalytics() {
       />
     )
   }
-
-  const { summary, segments, monthlyData, customersData, unitsData } = data
 
   // Get top customers by units rented
   const activeCustomers = customersData.filter((c) => !c.endDate)

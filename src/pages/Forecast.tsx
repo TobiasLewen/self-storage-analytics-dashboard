@@ -5,8 +5,10 @@ import { AlertCard } from '@/components/cards/AlertCard'
 import { Badge } from '@/components/ui/badge'
 import { SkeletonCard, SkeletonChart, Skeleton } from '@/components/ui/skeleton'
 import { PageErrorState } from '@/components/ui/error-state'
-import { useDataFetch } from '@/hooks/useDataFetch'
-import { getForecastData, getPricingAlerts, monthlyMetrics, getUnitSizeMetrics } from '@/data/mockData'
+import { useForecast } from '@/hooks/useForecast'
+import { usePricingAlerts } from '@/hooks/useForecast'
+import { useUnitMetrics } from '@/hooks/useUnits'
+import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency } from '@/lib/utils'
 import { TrendingUp, Calendar, AlertCircle, Lightbulb } from 'lucide-react'
 
@@ -45,20 +47,26 @@ function ForecastSkeleton() {
 }
 
 export function Forecast() {
-  const fetchData = useCallback(() => ({
-    forecastData: getForecastData(),
-    pricingAlerts: getPricingAlerts(),
-    unitSizeData: getUnitSizeMetrics(),
-    monthlyData: monthlyMetrics,
-  }), [])
+  const { forecast: forecastData, isLoading: forecastLoading, error: forecastError, refetch: refetchForecast } = useForecast()
+  const { alerts: pricingAlerts, isLoading: alertsLoading, error: alertsError, refetch: refetchAlerts } = usePricingAlerts()
+  const { metrics: unitSizeData, isLoading: unitsLoading, error: unitsError, refetch: refetchUnits } = useUnitMetrics()
+  const { metrics: monthlyData, isLoading: metricsLoading, error: metricsError, refetch: refetchMetrics } = useMonthlyMetrics()
 
-  const { data, isLoading, error, retry } = useDataFetch(fetchData)
+  const isLoading = forecastLoading || alertsLoading || unitsLoading || metricsLoading
+  const error = forecastError || alertsError || unitsError || metricsError
+
+  const retry = () => {
+    refetchForecast()
+    refetchAlerts()
+    refetchUnits()
+    refetchMetrics()
+  }
 
   if (isLoading) {
     return <ForecastSkeleton />
   }
 
-  if (error || !data) {
+  if (error || !forecastData || !pricingAlerts || !unitSizeData || !monthlyData) {
     return (
       <PageErrorState
         title="Failed to load forecast"
@@ -67,8 +75,6 @@ export function Forecast() {
       />
     )
   }
-
-  const { forecastData, pricingAlerts, unitSizeData, monthlyData } = data
 
   // Calculate seasonal trends (using monthly metrics)
   const seasonalData = monthlyData.map((m, index) => ({

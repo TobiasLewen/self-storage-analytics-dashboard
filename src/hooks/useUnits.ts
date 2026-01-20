@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { unitService } from '../services/unitService'
+import { unitKeys } from '../lib/queryKeys'
 import type { Unit, UnitSizeMetrics } from '../data/types'
 
 interface UseUnitsResult {
@@ -9,29 +10,25 @@ interface UseUnitsResult {
   refetch: () => void
 }
 
+/**
+ * useUnits Hook with React Query
+ * 
+ * Fetches unit data with automatic caching and refetching.
+ * Data is cached for 5 minutes and refetched on window focus or reconnect.
+ */
 export function useUnits(): UseUnitsResult {
-  const [units, setUnits] = useState<Unit[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const query = useQuery({
+    queryKey: unitKeys.list(),
+    queryFn: () => unitService.getUnits(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-  const fetchUnits = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await unitService.getUnits()
-      setUnits(data)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch units'))
-    } finally {
-      setIsLoading(false)
-    }
+  return {
+    units: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+    refetch: query.refetch,
   }
-
-  useEffect(() => {
-    fetchUnits()
-  }, [])
-
-  return { units, isLoading, error, refetch: fetchUnits }
 }
 
 interface UseUnitMetricsResult {
@@ -41,27 +38,23 @@ interface UseUnitMetricsResult {
   refetch: () => void
 }
 
+/**
+ * useUnitMetrics Hook with React Query
+ * 
+ * Fetches unit metrics data with automatic caching and refetching.
+ * Data is cached for 5 minutes and refetched on window focus or reconnect.
+ */
 export function useUnitMetrics(): UseUnitMetricsResult {
-  const [metrics, setMetrics] = useState<UnitSizeMetrics[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const query = useQuery({
+    queryKey: unitKeys.metrics(),
+    queryFn: () => unitService.getUnitMetrics(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-  const fetchMetrics = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await unitService.getUnitMetrics()
-      setMetrics(data)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch unit metrics'))
-    } finally {
-      setIsLoading(false)
-    }
+  return {
+    metrics: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+    refetch: query.refetch,
   }
-
-  useEffect(() => {
-    fetchMetrics()
-  }, [])
-
-  return { metrics, isLoading, error, refetch: fetchMetrics }
 }

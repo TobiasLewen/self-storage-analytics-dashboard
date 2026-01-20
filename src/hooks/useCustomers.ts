@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { customerService } from '../services/customerService'
+import { customerKeys } from '../lib/queryKeys'
 import type { Customer, CustomerSegment } from '../data/types'
 
 interface UseCustomersResult {
@@ -9,29 +10,25 @@ interface UseCustomersResult {
   refetch: () => void
 }
 
+/**
+ * useCustomers Hook with React Query
+ * 
+ * Fetches customer data with automatic caching and refetching.
+ * Data is cached for 5 minutes and refetched on window focus or reconnect.
+ */
 export function useCustomers(): UseCustomersResult {
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const query = useQuery({
+    queryKey: customerKeys.list(),
+    queryFn: () => customerService.getCustomers(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-  const fetchCustomers = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await customerService.getCustomers()
-      setCustomers(data)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch customers'))
-    } finally {
-      setIsLoading(false)
-    }
+  return {
+    customers: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+    refetch: query.refetch,
   }
-
-  useEffect(() => {
-    fetchCustomers()
-  }, [])
-
-  return { customers, isLoading, error, refetch: fetchCustomers }
 }
 
 interface UseCustomerSegmentsResult {
@@ -41,27 +38,23 @@ interface UseCustomerSegmentsResult {
   refetch: () => void
 }
 
+/**
+ * useCustomerSegments Hook with React Query
+ * 
+ * Fetches customer segment data with automatic caching and refetching.
+ * Data is cached for 5 minutes and refetched on window focus or reconnect.
+ */
 export function useCustomerSegments(): UseCustomerSegmentsResult {
-  const [segments, setSegments] = useState<CustomerSegment[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const query = useQuery({
+    queryKey: customerKeys.segments(),
+    queryFn: () => customerService.getCustomerSegments(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-  const fetchSegments = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await customerService.getCustomerSegments()
-      setSegments(data)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch customer segments'))
-    } finally {
-      setIsLoading(false)
-    }
+  return {
+    segments: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+    refetch: query.refetch,
   }
-
-  useEffect(() => {
-    fetchSegments()
-  }, [])
-
-  return { segments, isLoading, error, refetch: fetchSegments }
 }

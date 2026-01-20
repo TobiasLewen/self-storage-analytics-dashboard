@@ -1,15 +1,12 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedLineChart, MemoizedBarChart } from '@/components/charts/MemoizedCharts'
 import { SkeletonCard, SkeletonChart } from '@/components/ui/skeleton'
 import { PageErrorState } from '@/components/ui/error-state'
-import { useDataFetch } from '@/hooks/useDataFetch'
-import {
-  getDashboardSummary,
-  getUnitSizeMetrics,
-  monthlyMetrics,
-} from '@/data/mockData'
+import { useDashboardSummary } from '@/hooks/useDashboard'
+import { useUnitMetrics } from '@/hooks/useUnits'
+import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency, formatPercent } from '@/lib/utils'
 import { Percent, Euro, Box, Clock } from 'lucide-react'
 
@@ -55,19 +52,24 @@ const revenueYAxisFormatter = (value: number) => `${(value / 1000).toFixed(0)}k`
 const occupancyYAxisFormatter = (value: number) => `${value}%`
 
 export function ExecutiveOverview() {
-  const fetchData = useCallback(() => ({
-    summary: getDashboardSummary(),
-    unitSizeData: getUnitSizeMetrics(),
-    monthlyData: monthlyMetrics,
-  }), [])
+  const { summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary } = useDashboardSummary()
+  const { metrics: unitSizeData, isLoading: unitsLoading, error: unitsError, refetch: refetchUnits } = useUnitMetrics()
+  const { metrics: monthlyData, isLoading: metricsLoading, error: metricsError, refetch: refetchMetrics } = useMonthlyMetrics()
 
-  const { data, isLoading, error, retry } = useDataFetch(fetchData)
+  const isLoading = summaryLoading || unitsLoading || metricsLoading
+  const error = summaryError || unitsError || metricsError
+
+  const retry = () => {
+    refetchSummary()
+    refetchUnits()
+    refetchMetrics()
+  }
 
   if (isLoading) {
     return <ExecutiveOverviewSkeleton />
   }
 
-  if (error || !data) {
+  if (error || !summary || !unitSizeData || !monthlyData) {
     return (
       <PageErrorState
         title="Failed to load dashboard"
@@ -76,8 +78,6 @@ export function ExecutiveOverview() {
       />
     )
   }
-
-  const { summary, unitSizeData, monthlyData } = data
 
   return (
     <div className="space-y-6">

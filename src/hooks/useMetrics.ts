@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { metricsService } from '../services/metricsService'
+import { metricsKeys } from '../lib/queryKeys'
 import type { MonthlyMetrics } from '../data/types'
 
 interface UseMonthlyMetricsResult {
@@ -9,27 +10,23 @@ interface UseMonthlyMetricsResult {
   refetch: () => void
 }
 
+/**
+ * useMonthlyMetrics Hook with React Query
+ * 
+ * Fetches monthly metrics data with automatic caching and refetching.
+ * Data is cached for 5 minutes and refetched on window focus or reconnect.
+ */
 export function useMonthlyMetrics(): UseMonthlyMetricsResult {
-  const [metrics, setMetrics] = useState<MonthlyMetrics[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const query = useQuery({
+    queryKey: metricsKeys.monthly(),
+    queryFn: () => metricsService.getMonthlyMetrics(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
 
-  const fetchMetrics = async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await metricsService.getMonthlyMetrics()
-      setMetrics(data)
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch monthly metrics'))
-    } finally {
-      setIsLoading(false)
-    }
+  return {
+    metrics: query.data ?? [],
+    isLoading: query.isLoading,
+    error: query.error as Error | null,
+    refetch: query.refetch,
   }
-
-  useEffect(() => {
-    fetchMetrics()
-  }, [])
-
-  return { metrics, isLoading, error, refetch: fetchMetrics }
 }
