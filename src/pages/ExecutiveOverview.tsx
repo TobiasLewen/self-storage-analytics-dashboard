@@ -31,6 +31,29 @@ function ExecutiveOverviewSkeleton() {
   )
 }
 
+// Chart configurations - defined outside component to avoid recreating on each render
+const REVENUE_LINE_CONFIG = [{
+  dataKey: 'revenue',
+  stroke: 'hsl(var(--primary))',
+  dot: { fill: 'hsl(var(--primary))' },
+}]
+
+const UNIT_SIZE_BAR_CONFIG = [
+  { dataKey: 'occupiedUnits', name: 'Belegt', fill: 'hsl(var(--primary))', stackId: 'a' },
+  { dataKey: 'availableUnits', name: 'Verfügbar', fill: 'hsl(var(--muted))', stackId: 'a' },
+]
+
+const OCCUPANCY_LINE_CONFIG = [{
+  dataKey: 'occupancyRate',
+  stroke: 'hsl(var(--primary))',
+  dot: { fill: 'hsl(var(--primary))' },
+}]
+
+const revenueTooltipFormatter = (value: number) => [formatCurrency(value), 'Umsatz'] as [string, string]
+const occupancyTooltipFormatter = (value: number) => [`${value}%`, 'Belegung'] as [string, string]
+const revenueYAxisFormatter = (value: number) => `${(value / 1000).toFixed(0)}k`
+const occupancyYAxisFormatter = (value: number) => `${value}%`
+
 export function ExecutiveOverview() {
   const fetchData = useCallback(() => ({
     summary: getDashboardSummary(),
@@ -55,44 +78,6 @@ export function ExecutiveOverview() {
   }
 
   const { summary, unitSizeData, monthlyData } = data
-
-  // Memoize chart configurations to prevent unnecessary re-renders
-  const revenueLineConfig = useMemo(() => [{
-    dataKey: 'revenue',
-    stroke: 'hsl(var(--primary))',
-    dot: { fill: 'hsl(var(--primary))' },
-  }], [])
-
-  const unitSizeBarConfig = useMemo(() => [
-    { dataKey: 'occupiedUnits', name: 'Belegt', fill: 'hsl(var(--primary))', stackId: 'a' },
-    { dataKey: 'availableUnits', name: 'Verfügbar', fill: 'hsl(var(--muted))', stackId: 'a' },
-  ], [])
-
-  const occupancyLineConfig = useMemo(() => [{
-    dataKey: 'occupancyRate',
-    stroke: 'hsl(var(--primary))',
-    dot: { fill: 'hsl(var(--primary))' },
-  }], [])
-
-  const revenueTooltipFormatter = useCallback(
-    (value: number) => [formatCurrency(value), 'Umsatz'] as [string, string],
-    []
-  )
-
-  const occupancyTooltipFormatter = useCallback(
-    (value: number) => [`${value}%`, 'Belegung'] as [string, string],
-    []
-  )
-
-  const revenueYAxisFormatter = useCallback(
-    (value: number) => `${(value / 1000).toFixed(0)}k`,
-    []
-  )
-
-  const occupancyYAxisFormatter = useCallback(
-    (value: number) => `${value}%`,
-    []
-  )
 
   return (
     <div className="space-y-6">
@@ -136,7 +121,7 @@ export function ExecutiveOverview() {
           <CardContent>
             <MemoizedLineChart
               data={monthlyData}
-              lines={revenueLineConfig}
+              lines={REVENUE_LINE_CONFIG}
               xAxisKey="month"
               height={300}
               yAxisFormatter={revenueYAxisFormatter}
@@ -153,7 +138,7 @@ export function ExecutiveOverview() {
           <CardContent>
             <MemoizedBarChart
               data={unitSizeData}
-              bars={unitSizeBarConfig}
+              bars={UNIT_SIZE_BAR_CONFIG}
               xAxisKey="size"
               height={300}
               layout="vertical"
@@ -172,7 +157,7 @@ export function ExecutiveOverview() {
         <CardContent>
           <MemoizedLineChart
             data={monthlyData}
-            lines={occupancyLineConfig}
+            lines={OCCUPANCY_LINE_CONFIG}
             xAxisKey="month"
             height={250}
             yAxisDomain={[70, 100]}

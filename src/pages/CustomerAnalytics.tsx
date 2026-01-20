@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedLineChart, MemoizedPieChart } from '@/components/charts/MemoizedCharts'
@@ -25,6 +25,17 @@ import { formatCurrency, formatPercent } from '@/lib/utils'
 import { Users, UserMinus, Euro, Building2 } from 'lucide-react'
 
 const COLORS = ['#3b82f6', '#22c55e']
+
+// Chart configurations - defined outside component
+const CUSTOMER_TREND_LINE_CONFIG = [
+  { dataKey: 'newCustomers', name: 'Neue Kunden', stroke: '#22c55e', dot: { fill: '#22c55e' } },
+  { dataKey: 'churnedCustomers', name: 'Abgegangen', stroke: '#ef4444', dot: { fill: '#ef4444' } },
+]
+
+const pieLabelFormatter = (entry: { name: string; percent?: number }) =>
+  `${entry.name}: ${((entry.percent ?? 0) * 100).toFixed(0)}%`
+
+const pieTooltipFormatter = (value: number) => [`${value} Kunden`, ''] as [string, string]
 
 function CustomerAnalyticsSkeleton() {
   return (
@@ -92,27 +103,7 @@ export function CustomerAnalytics() {
   }))
 
   // Prepare pie chart data with translated names
-  const pieChartData = useMemo(() =>
-    segments.map(s => ({ ...s, name: s.type === 'private' ? 'Privat' : 'Geschäft' })),
-    [segments]
-  )
-
-  // Memoize chart configurations
-  const customerTrendLineConfig = useMemo(() => [
-    { dataKey: 'newCustomers', name: 'Neue Kunden', stroke: '#22c55e', dot: { fill: '#22c55e' } },
-    { dataKey: 'churnedCustomers', name: 'Abgegangen', stroke: '#ef4444', dot: { fill: '#ef4444' } },
-  ], [])
-
-  const pieLabelFormatter = useCallback(
-    (entry: { name: string; percent?: number }) =>
-      `${entry.name}: ${((entry.percent ?? 0) * 100).toFixed(0)}%`,
-    []
-  )
-
-  const pieTooltipFormatter = useCallback(
-    (value: number) => [`${value} Kunden`, ''] as [string, string],
-    []
-  )
+  const pieChartData = segments.map(s => ({ ...s, name: s.type === 'private' ? 'Privat' : 'Geschäft' }))
 
   return (
     <div className="space-y-6">
@@ -154,7 +145,7 @@ export function CustomerAnalytics() {
           <CardContent>
             <MemoizedLineChart
               data={customerTrendData}
-              lines={customerTrendLineConfig}
+              lines={CUSTOMER_TREND_LINE_CONFIG}
               xAxisKey="month"
               height={300}
               showLegend

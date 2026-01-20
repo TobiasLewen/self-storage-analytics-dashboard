@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedBarChart } from '@/components/charts/MemoizedCharts'
 import {
@@ -18,6 +18,16 @@ import { formatCurrency, formatPercent } from '@/lib/utils'
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react'
 
 const COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
+
+// Chart configurations - defined outside component
+const OCCUPANCY_BAR_CONFIG = [{
+  dataKey: 'occupancyRate',
+  fill: COLORS[0],
+  radius: [4, 4, 0, 0] as [number, number, number, number],
+}]
+
+const occupancyTooltipFormatter = (value: number) => [`${value}%`, 'Belegung'] as [string, string]
+const occupancyYAxisFormatter = (value: number) => `${value}%`
 
 function UnitPerformanceSkeleton() {
   return (
@@ -65,23 +75,6 @@ export function UnitPerformance() {
   // Calculate turnover rate (simplified: new customers / total customers)
   const lastMonth = monthlyData[monthlyData.length - 1]
   const turnoverRate = ((lastMonth.newCustomers + lastMonth.churnedCustomers) / lastMonth.occupiedUnits) * 100
-
-  // Memoize chart configurations
-  const occupancyBarConfig = useMemo(() => [{
-    dataKey: 'occupancyRate',
-    fill: COLORS[0],
-    radius: [4, 4, 0, 0] as [number, number, number, number],
-  }], [])
-
-  const occupancyTooltipFormatter = useCallback(
-    (value: number) => [`${value}%`, 'Belegung'] as [string, string],
-    []
-  )
-
-  const occupancyYAxisFormatter = useCallback(
-    (value: number) => `${value}%`,
-    []
-  )
 
   return (
     <div className="space-y-6">
@@ -145,7 +138,7 @@ export function UnitPerformance() {
         <CardContent>
           <MemoizedBarChart
             data={unitSizeData}
-            bars={occupancyBarConfig}
+            bars={OCCUPANCY_BAR_CONFIG}
             xAxisKey="size"
             height={300}
             yAxisDomain={[0, 100]}
