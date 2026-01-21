@@ -1,0 +1,194 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "open": "Open",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "refresh": "Refresh",
+    "export": "Export",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "dashboard": "Dashboard",
+    "overview": "Overview",
+    "details": "Details",
+    "summary": "Summary",
+    "total": "Total",
+    "average": "Average",
+    "percentage": "Percentage",
+    "currency": "Currency",
+    "date": "Date",
+    "time": "Time",
+    "period": "Period",
+    "month": "Month",
+    "year": "Year",
+    "week": "Week",
+    "day": "Day",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "last": "Last",
+    "next": "Next",
+    "current": "Current",
+    "previous": "Previous",
+    "increase": "Increase",
+    "decrease": "Decrease",
+    "positive": "Positive",
+    "negative": "Negative",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "yes": "Yes",
+    "no": "No",
+    "on": "On",
+    "off": "Off",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "new": "new"
+  },
+  "navigation": {
+    "executiveOverview": "Executive Overview",
+    "unitPerformance": "Unit Performance",
+    "customerAnalytics": "Customer Analytics",
+    "forecast": "Forecast",
+    "settings": "Settings",
+    "home": "Home"
+  },
+  "pages": {
+    "executiveOverview": {
+      "title": "Executive Overview",
+      "occupancyRate": "Occupancy Rate",
+      "monthlyRevenue": "Monthly Revenue",
+      "revenueYoy": "Revenue YoY",
+      "avgRentalDuration": "Avg. Rental Duration",
+      "revenueDevelopment": "Revenue Development (12 Months)",
+      "yearComparison": "Year Comparison Revenue",
+      "occupancyRateChart": "Occupancy Rate (12 Months)"
+    },
+    "unitPerformance": {
+      "title": "Unit Performance",
+      "analysis": "Analysis of unit performance and occupancy",
+      "occupancyBySize": "Occupancy Rate by Size",
+      "revenuePerSqm": "Revenue per Square Meter",
+      "turnoverRate": "Turnover Rate",
+      "perMonth": "per month",
+      "columns": {
+        "unit": "Unit",
+        "size": "Size",
+        "occupied": "Occupied",
+        "occupancy": "Occupancy",
+        "avgPrice": "Avg. Price",
+        "revenuePerSqm": "€/m²",
+        "totalRevenue": "Total"
+      }
+    },
+    "customerAnalytics": {
+      "title": "Customer Analytics",
+      "customerDevelopment": "Customer Development (12 Months)",
+      "topCustomers": "Top Customers by Revenue",
+      "churnRate": "Churn Rate",
+      "avgCustomerLifetimeValue": "Avg. Customer Lifetime Value",
+      "monthlyRevenue": "Monthly Revenue"
+    },
+    "forecast": {
+      "title": "Forecast",
+      "threeMonthForecast": "3-Month Forecast",
+      "nextThreeMonths": "next 3 months",
+      "revenueForecast": "3-Month Revenue Forecast",
+      "forecastStart": "Forecast Start",
+      "vsPreviousYear": "vs. Previous Year"
+    },
+    "settings": {
+      "title": "Settings",
+      "general": "General",
+      "appearance": "Appearance",
+      "notifications": "Notifications",
+      "data": "Data"
+    }
+  },
+  "components": {
+    "dateRangePicker": {
+      "selectPeriod": "Select period",
+      "presets": "Presets",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last3Months": "Last 3 months",
+      "last6Months": "Last 6 months",
+      "lastYear": "Last year",
+      "thisYear": "This year"
+    },
+    "notificationCenter": {
+      "title": "Notifications",
+      "noNotifications": "No notifications",
+      "noNotificationsMessage": "You currently have no notifications.",
+      "markAllAsRead": "Mark all as read",
+      "clearAll": "Clear all",
+      "viewAll": "View all notifications",
+      "markAsRead": "Mark as read",
+      "read": "Read",
+      "priority": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
+    },
+    "generalSettings": {
+      "language": "Language",
+      "languageDescription": "Select your preferred language",
+      "dateFormat": "Date format",
+      "dateFormatDescription": "Format for date display",
+      "currency": "Currency",
+      "currencyDescription": "Currency for price displays",
+      "defaultPage": "Home page",
+      "defaultPageDescription": "Page displayed on startup"
+    },
+    "notificationSettings": {
+      "occupancyThreshold": "Occupancy rate threshold (%)",
+      "occupancyThresholdDescription": "Notification when exceeding this occupancy rate",
+      "revenueThreshold": "Revenue change threshold (%)",
+      "revenueThresholdDescription": "Notification for revenue changes above this percentage"
+    },
+    "dataSettings": {
+      "exportFormat": "Default export format",
+      "dataRetention": "Data retention (months)",
+      "resetToDefaults": "Reset to defaults",
+      "resetDescription": "Reset all settings to default values"
+    }
+  },
+  "charts": {
+    "currentYear": "Current year",
+    "previousYear": "Previous year",
+    "revenue": "Revenue",
+    "occupancy": "Occupancy",
+    "month": "Month"
+  },
+  "reports": {
+    "monthlyBusinessReport": "Monthly Business Report",
+    "occupancyRate": "Occupancy Rate",
+    "monthlyRevenue": "Monthly Revenue",
+    "avgRentalDuration": "Avg. Rental Duration",
+    "churnRate": "Churn Rate",
+    "occupied": "Occupied",
+    "revenue": "Revenue",
+    "summaryText": "Total revenue of {{totalRevenue}} was achieved in the reporting period (last 3 months). The average occupancy rate was {{avgOccupancy}}. Revenue {{changeDirection}} by {{changePercent}}% compared to the previous month.",
+    "revenueIncreased": "increased",
+    "revenueDecreased": "decreased",
+    "customerLifetimeValue": "The average customer lifetime value is {{value}}."
+  },
+  "toast": {
+    "saved": "Saved",
+    "savedMessage": "Settings have been updated",
+    "reset": "Settings reset",
+    "resetMessage": "All settings have been reset to default values."
+  }
+}

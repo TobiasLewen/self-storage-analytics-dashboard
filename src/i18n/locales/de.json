@@ -1,0 +1,194 @@
+{
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "view": "Anzeigen",
+    "open": "Öffnen",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "refresh": "Aktualisieren",
+    "export": "Exportieren",
+    "settings": "Einstellungen",
+    "notifications": "Benachrichtigungen",
+    "dashboard": "Dashboard",
+    "overview": "Übersicht",
+    "details": "Details",
+    "summary": "Zusammenfassung",
+    "total": "Gesamt",
+    "average": "Durchschnitt",
+    "percentage": "Prozent",
+    "currency": "Währung",
+    "date": "Datum",
+    "time": "Zeit",
+    "period": "Zeitraum",
+    "month": "Monat",
+    "year": "Jahr",
+    "week": "Woche",
+    "day": "Tag",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "tomorrow": "Morgen",
+    "last": "Letzte",
+    "next": "Nächste",
+    "current": "Aktuell",
+    "previous": "Vorherige",
+    "increase": "Steigerung",
+    "decrease": "Rückgang",
+    "positive": "Positiv",
+    "negative": "Negativ",
+    "high": "Hoch",
+    "medium": "Mittel",
+    "low": "Niedrig",
+    "yes": "Ja",
+    "no": "Nein",
+    "on": "Ein",
+    "off": "Aus",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
+    "new": "neu"
+  },
+  "navigation": {
+    "executiveOverview": "Executive Overview",
+    "unitPerformance": "Unit Performance",
+    "customerAnalytics": "Customer Analytics",
+    "forecast": "Forecast",
+    "settings": "Einstellungen",
+    "home": "Startseite"
+  },
+  "pages": {
+    "executiveOverview": {
+      "title": "Executive Overview",
+      "occupancyRate": "Belegungsrate",
+      "monthlyRevenue": "Monatlicher Umsatz",
+      "revenueYoy": "Umsatz YoY",
+      "avgRentalDuration": "Ø Mietdauer",
+      "revenueDevelopment": "Umsatzentwicklung (12 Monate)",
+      "yearComparison": "Jahresvergleich Umsatz",
+      "occupancyRateChart": "Belegungsrate (12 Monate)"
+    },
+    "unitPerformance": {
+      "title": "Unit Performance",
+      "analysis": "Analyse der Einheiten-Leistung und Belegung",
+      "occupancyBySize": "Belegungsrate nach Größe",
+      "revenuePerSqm": "Umsatz pro Quadratmeter",
+      "turnoverRate": "Fluktuationsrate",
+      "perMonth": "pro Monat",
+      "columns": {
+        "unit": "Einheit",
+        "size": "Größe",
+        "occupied": "Belegt",
+        "occupancy": "Belegung",
+        "avgPrice": "Ø Preis",
+        "revenuePerSqm": "€/m²",
+        "totalRevenue": "Gesamt"
+      }
+    },
+    "customerAnalytics": {
+      "title": "Customer Analytics",
+      "customerDevelopment": "Kundenentwicklung (12 Monate)",
+      "topCustomers": "Top Kunden nach Umsatz",
+      "churnRate": "Churn Rate",
+      "avgCustomerLifetimeValue": "Ø Customer Lifetime Value",
+      "monthlyRevenue": "Monatl. Umsatz"
+    },
+    "forecast": {
+      "title": "Forecast",
+      "threeMonthForecast": "3-Monats Prognose",
+      "nextThreeMonths": "nächste 3 Monate",
+      "revenueForecast": "3-Monats Umsatzprognose",
+      "forecastStart": "Prognose Start",
+      "vsPreviousYear": "vs. Vorjahr"
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "general": "Allgemein",
+      "appearance": "Erscheinungsbild",
+      "notifications": "Benachrichtigungen",
+      "data": "Daten"
+    }
+  },
+  "components": {
+    "dateRangePicker": {
+      "selectPeriod": "Zeitraum wählen",
+      "presets": "Voreinstellungen",
+      "last7Days": "Letzte 7 Tage",
+      "last30Days": "Letzte 30 Tage",
+      "last3Months": "Letzte 3 Monate",
+      "last6Months": "Letzte 6 Monate",
+      "lastYear": "Letztes Jahr",
+      "thisYear": "Dieses Jahr"
+    },
+    "notificationCenter": {
+      "title": "Benachrichtigungen",
+      "noNotifications": "Keine Benachrichtigungen",
+      "noNotificationsMessage": "Sie haben derzeit keine Benachrichtigungen.",
+      "markAllAsRead": "Alle als gelesen markieren",
+      "clearAll": "Alle löschen",
+      "viewAll": "Alle Benachrichtigungen anzeigen",
+      "markAsRead": "Als gelesen markieren",
+      "read": "Gelesen",
+      "priority": {
+        "high": "Hoch",
+        "medium": "Mittel",
+        "low": "Niedrig"
+      }
+    },
+    "generalSettings": {
+      "language": "Sprache",
+      "languageDescription": "Wählen Sie Ihre bevorzugte Sprache",
+      "dateFormat": "Datumsformat",
+      "dateFormatDescription": "Format für die Datumsanzeige",
+      "currency": "Währung",
+      "currencyDescription": "Währung für Preisanzeigen",
+      "defaultPage": "Startseite",
+      "defaultPageDescription": "Seite, die beim Start angezeigt wird"
+    },
+    "notificationSettings": {
+      "occupancyThreshold": "Belegungsrate-Schwellenwert (%)",
+      "occupancyThresholdDescription": "Benachrichtigung bei Überschreitung dieser Belegungsrate",
+      "revenueThreshold": "Umsatzänderungs-Schwellenwert (%)",
+      "revenueThresholdDescription": "Benachrichtigung bei Umsatzänderung über diesem Prozentsatz"
+    },
+    "dataSettings": {
+      "exportFormat": "Standard-Exportformat",
+      "dataRetention": "Datenspeicherung (Monate)",
+      "resetToDefaults": "Auf Standard zurücksetzen",
+      "resetDescription": "Alle Einstellungen auf Standardwerte zurücksetzen"
+    }
+  },
+  "charts": {
+    "currentYear": "Aktuelles Jahr",
+    "previousYear": "Vorjahr",
+    "revenue": "Umsatz",
+    "occupancy": "Belegung",
+    "month": "Monat"
+  },
+  "reports": {
+    "monthlyBusinessReport": "Monatlicher Geschäftsbericht",
+    "occupancyRate": "Belegungsrate",
+    "monthlyRevenue": "Monatlicher Umsatz",
+    "avgRentalDuration": "Ø Mietdauer",
+    "churnRate": "Churn Rate",
+    "occupied": "Belegt",
+    "revenue": "Umsatz",
+    "summaryText": "Im Berichtszeitraum wurde ein Gesamtumsatz von {{totalRevenue}} erzielt (letzte 3 Monate). Die durchschnittliche Belegungsrate lag bei {{avgOccupancy}}. Der Umsatz ist im Vergleich zum Vormonat um {{changePercent}}% {{changeDirection}}.",
+    "revenueIncreased": "gestiegen",
+    "revenueDecreased": "gesunken",
+    "customerLifetimeValue": "Der Customer Lifetime Value beträgt durchschnittlich {{value}}."
+  },
+  "toast": {
+    "saved": "Gespeichert",
+    "savedMessage": "Einstellungen wurden aktualisiert",
+    "reset": "Einstellungen zurückgesetzt",
+    "resetMessage": "Alle Einstellungen wurden auf die Standardwerte zurückgesetzt."
+  }
+}

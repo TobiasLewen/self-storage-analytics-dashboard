@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -10,18 +11,19 @@ import { useSettings } from '@/contexts/SettingsContext'
 import { useToast } from '@/hooks/useToast'
 
 export function GeneralSettings() {
+  const { t } = useTranslation()
   const { settings, updateSettings } = useSettings()
   const toast = useToast()
 
   const handleUpdate = (updates: Partial<typeof settings>) => {
     updateSettings(updates)
-    toast.success('Gespeichert', 'Einstellungen wurden aktualisiert')
+    toast.success(t('toast.saved'), t('toast.savedMessage'))
   }
 
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="language">Sprache</Label>
+        <Label htmlFor="language">{t('components.generalSettings.language')}</Label>
         <Select
           value={settings.language}
           onValueChange={(value) => handleUpdate({ language: value as 'de' | 'en' })}
@@ -35,12 +37,12 @@ export function GeneralSettings() {
           </SelectContent>
         </Select>
         <p className="text-sm text-muted-foreground">
-          Wählen Sie Ihre bevorzugte Sprache
+          {t('components.generalSettings.languageDescription')}
         </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="dateFormat">Datumsformat</Label>
+        <Label htmlFor="dateFormat">{t('components.generalSettings.dateFormat')}</Label>
         <Select
           value={settings.dateFormat}
           onValueChange={(value) => handleUpdate({ dateFormat: value as any })}
@@ -55,12 +57,12 @@ export function GeneralSettings() {
           </SelectContent>
         </Select>
         <p className="text-sm text-muted-foreground">
-          Format für die Datumsanzeige
+          {t('components.generalSettings.dateFormatDescription')}
         </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="currency">Währung</Label>
+        <Label htmlFor="currency">{t('components.generalSettings.currency')}</Label>
         <Select
           value={settings.currencyFormat}
           onValueChange={(value) => handleUpdate({ currencyFormat: value as any })}
@@ -75,12 +77,12 @@ export function GeneralSettings() {
           </SelectContent>
         </Select>
         <p className="text-sm text-muted-foreground">
-          Währung für Preisanzeigen
+          {t('components.generalSettings.currencyDescription')}
         </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="defaultPage">Startseite</Label>
+        <Label htmlFor="defaultPage">{t('components.generalSettings.defaultPage')}</Label>
         <Select
           value={settings.defaultPage}
           onValueChange={(value) => handleUpdate({ defaultPage: value })}
@@ -96,7 +98,7 @@ export function GeneralSettings() {
           </SelectContent>
         </Select>
         <p className="text-sm text-muted-foreground">
-          Seite, die beim Start angezeigt wird
+          {t('components.generalSettings.defaultPageDescription')}
         </p>
       </div>
     </div>

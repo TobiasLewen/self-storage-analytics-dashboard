@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Bell, Check, Trash2, ExternalLink, AlertCircle, TrendingUp, Settings, FileText } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import NotificationService, { type Notification, type NotificationType } from '@/services/NotificationService'
 import { formatDistanceToNow } from 'date-fns'
-import { de } from 'date-fns/locale'
+import { de, enUS } from 'date-fns/locale'
+import { useSettings } from '@/contexts/SettingsContext'
 
 const notificationIcons: Record<NotificationType, React.ReactNode> = {
   occupancy_alert: <AlertCircle className="h-4 w-4" />,
@@ -34,13 +36,15 @@ export function NotificationCenter({
 }: NotificationCenterProps) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const { t } = useTranslation()
+  const { settings } = useSettings()
 
   useEffect(() => {
     // Load initial notifications
     updateNotifications()
 
     // Subscribe to new notifications
-    const unsubscribe = NotificationService.subscribe((newNotification) => {
+    const unsubscribe = NotificationService.subscribe(() => {
       updateNotifications()
     })
 
@@ -94,9 +98,10 @@ export function NotificationCenter({
   }
 
   const formatTime = (date: Date) => {
+    const locale = settings.language === 'de' ? de : enUS
     return formatDistanceToNow(date, { 
       addSuffix: true,
-      locale: de 
+      locale
     })
   }
 
@@ -106,15 +111,15 @@ export function NotificationCenter({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Benachrichtigungen
+            {t('components.notificationCenter.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-medium text-lg mb-2">Keine Benachrichtigungen</h3>
+            <h3 className="font-medium text-lg mb-2">{t('components.notificationCenter.noNotifications')}</h3>
             <p className="text-muted-foreground">
-              Sie haben derzeit keine Benachrichtigungen.
+              {t('components.notificationCenter.noNotificationsMessage')}
             </p>
           </div>
         </CardContent>
@@ -128,10 +133,10 @@ export function NotificationCenter({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Benachrichtigungen
+            {t('components.notificationCenter.title')}
             {unreadCount > 0 && (
               <Badge variant="destructive" className="ml-2">
-                {unreadCount} neu
+                {unreadCount} {t('common.new', 'neu')}
               </Badge>
             )}
           </CardTitle>
@@ -144,7 +149,7 @@ export function NotificationCenter({
                 className="h-8 gap-1"
               >
                 <Check className="h-3 w-3" />
-                Alle als gelesen markieren
+                {t('components.notificationCenter.markAllAsRead')}
               </Button>
             )}
             {showClearAll && (
@@ -155,7 +160,7 @@ export function NotificationCenter({
                 className="h-8 gap-1 text-destructive"
               >
                 <Trash2 className="h-3 w-3" />
-                Alle löschen
+                {t('components.notificationCenter.clearAll')}
               </Button>
             )}
           </div>
@@ -195,8 +200,9 @@ export function NotificationCenter({
                         variant="outline" 
                         className={`text-xs ${priorityColors[notification.priority]}`}
                       >
-                        {notification.priority === 'high' ? 'Hoch' : 
-                         notification.priority === 'medium' ? 'Mittel' : 'Niedrig'}
+                        {notification.priority === 'high' ? t('components.notificationCenter.priority.high') : 
+                         notification.priority === 'medium' ? t('components.notificationCenter.priority.medium') : 
+                         t('components.notificationCenter.priority.low')}
                       </Badge>
                     </div>
                     
@@ -216,7 +222,7 @@ export function NotificationCenter({
                             }}
                           >
                             <ExternalLink className="h-3 w-3 mr-1" />
-                            Öffnen
+                            {t('common.open')}
                           </Button>
                         )}
                         <Button
@@ -229,7 +235,7 @@ export function NotificationCenter({
                           }}
                         >
                           <Check className="h-3 w-3 mr-1" />
-                          {notification.read ? 'Gelesen' : 'Als gelesen markieren'}
+                          {notification.read ? t('components.notificationCenter.read') : t('components.notificationCenter.markAsRead')}
                         </Button>
                         <Button
                           variant="ghost"
@@ -262,7 +268,7 @@ export function NotificationCenter({
               console.log('View all notifications')
             }}
           >
-            Alle Benachrichtigungen anzeigen
+            {t('components.notificationCenter.viewAll')}
           </Button>
         </div>
       </CardContent>

@@ -1,8 +1,9 @@
 import * as React from 'react'
-import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import type { DateRange } from 'react-day-picker'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/lib/formatUtils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -23,6 +24,8 @@ export function DateRangePicker({
   className,
 }: DateRangePickerProps) {
   const [selectedDate, setSelectedDate] = React.useState<DateRange | undefined>(date)
+  const { t } = useTranslation()
+  const { formatDate } = useFormatting()
 
   React.useEffect(() => {
     setSelectedDate(date)
@@ -35,7 +38,7 @@ export function DateRangePicker({
 
   const presets = [
     {
-      label: 'Letzte 7 Tage',
+      label: t('components.dateRangePicker.last7Days'),
       getValue: () => {
         const end = new Date()
         const start = new Date()
@@ -44,7 +47,7 @@ export function DateRangePicker({
       },
     },
     {
-      label: 'Letzte 30 Tage',
+      label: t('components.dateRangePicker.last30Days'),
       getValue: () => {
         const end = new Date()
         const start = new Date()
@@ -53,7 +56,7 @@ export function DateRangePicker({
       },
     },
     {
-      label: 'Letzte 3 Monate',
+      label: t('components.dateRangePicker.last3Months'),
       getValue: () => {
         const end = new Date()
         const start = new Date()
@@ -62,7 +65,7 @@ export function DateRangePicker({
       },
     },
     {
-      label: 'Letzte 6 Monate',
+      label: t('components.dateRangePicker.last6Months'),
       getValue: () => {
         const end = new Date()
         const start = new Date()
@@ -71,7 +74,7 @@ export function DateRangePicker({
       },
     },
     {
-      label: 'Letztes Jahr',
+      label: t('components.dateRangePicker.lastYear'),
       getValue: () => {
         const end = new Date()
         const start = new Date()
@@ -80,7 +83,7 @@ export function DateRangePicker({
       },
     },
     {
-      label: 'Dieses Jahr',
+      label: t('components.dateRangePicker.thisYear'),
       getValue: () => {
         const end = new Date()
         const start = new Date(end.getFullYear(), 0, 1)
@@ -105,21 +108,21 @@ export function DateRangePicker({
             {selectedDate?.from ? (
               selectedDate.to ? (
                 <>
-                  {format(selectedDate.from, 'dd.MM.yyyy')} -{' '}
-                  {format(selectedDate.to, 'dd.MM.yyyy')}
+                  {formatDate(selectedDate.from)} -{' '}
+                  {formatDate(selectedDate.to)}
                 </>
               ) : (
-                format(selectedDate.from, 'dd.MM.yyyy')
+                formatDate(selectedDate.from)
               )
             ) : (
-              <span>Zeitraum wählen</span>
+              <span>{t('components.dateRangePicker.selectPeriod')}</span>
             )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div className="flex">
             <div className="border-r border-border p-3 space-y-2">
-              <div className="text-sm font-medium mb-2">Voreinstellungen</div>
+              <div className="text-sm font-medium mb-2">{t('components.dateRangePicker.presets')}</div>
               {presets.map((preset) => (
                 <Button
                   key={preset.label}

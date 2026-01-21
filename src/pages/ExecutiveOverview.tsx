@@ -13,7 +13,7 @@ import { useDashboardSummary } from '@/hooks/useDashboard'
 import { useUnitMetrics } from '@/hooks/useUnits'
 import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency, formatPercent } from '@/lib/utils'
-import { Percent, Euro, Box, Clock, TrendingUp } from 'lucide-react'
+import { Percent, Euro, Box, Clock } from 'lucide-react'
 
 function ExecutiveOverviewSkeleton() {
   return (
@@ -64,6 +64,7 @@ export function ExecutiveOverview() {
     start.setMonth(start.getMonth() - 6)
     return { from: start, to: end }
   })
+  const [showYoYComparison, setShowYoYComparison] = useState(true)
 
   const { summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary } = useDashboardSummary()
   const { metrics: unitSizeData, isLoading: unitsLoading, error: unitsError, refetch: refetchUnits } = useUnitMetrics()
@@ -127,8 +128,6 @@ export function ExecutiveOverview() {
   const safeSummary = summary!
   const safeUnitSizeData = unitSizeData!
   const safeMonthlyData = monthlyData!
-
-  const [showYoYComparison, setShowYoYComparison] = useState(true)
 
   return (
     <div className="space-y-6">

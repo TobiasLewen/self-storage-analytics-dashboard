@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import i18n from '@/i18n/config'
 
 export type Theme = 'light' | 'dark' | 'system'
 export type Language = 'de' | 'en'
@@ -89,10 +90,24 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem('app-settings', JSON.stringify(settings))
+    
+    // Update i18n language when settings change
+    if (settings.language !== i18n.language) {
+      i18n.changeLanguage(settings.language).catch(console.error)
+    }
   }, [settings])
 
   const updateSettings = (updates: Partial<Settings>) => {
-    setSettings((prev) => ({ ...prev, ...updates }))
+    setSettings((prev) => {
+      const newSettings = { ...prev, ...updates }
+      
+      // Immediately update i18n language if language changed
+      if (updates.language && updates.language !== i18n.language) {
+        i18n.changeLanguage(updates.language).catch(console.error)
+      }
+      
+      return newSettings
+    })
   }
 
   const resetSettings = () => {
