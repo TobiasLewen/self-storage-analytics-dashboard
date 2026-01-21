@@ -3,19 +3,23 @@ import type { DateRange } from 'react-day-picker'
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedLineChart, MemoizedBarChart } from '@/components/charts/MemoizedCharts'
+import { YearOverYearChart } from '@/components/charts/YearOverYearChart'
 import { SkeletonCard, SkeletonChart } from '@/components/ui/skeleton'
 import { PageErrorState } from '@/components/ui/error-state'
 import { DateRangePicker } from '@/components/ui/date-range-picker'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { useDashboardSummary } from '@/hooks/useDashboard'
 import { useUnitMetrics } from '@/hooks/useUnits'
 import { useMonthlyMetrics } from '@/hooks/useMetrics'
 import { formatCurrency, formatPercent } from '@/lib/utils'
-import { Percent, Euro, Box, Clock } from 'lucide-react'
+import { Percent, Euro, Box, Clock, TrendingUp } from 'lucide-react'
 
 function ExecutiveOverviewSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <SkeletonCard />
         <SkeletonCard />
         <SkeletonCard />
         <SkeletonCard />
@@ -124,6 +128,8 @@ export function ExecutiveOverview() {
   const safeUnitSizeData = unitSizeData!
   const safeMonthlyData = monthlyData!
 
+  const [showYoYComparison, setShowYoYComparison] = useState(true)
+
   return (
     <div className="space-y-6">
       {/* Date Range Filter */}
@@ -134,11 +140,23 @@ export function ExecutiveOverview() {
             Ihre wichtigsten Kennzahlen auf einen Blick
           </p>
         </div>
-        <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+        <div className="flex items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="yoy-toggle"
+              checked={showYoYComparison}
+              onCheckedChange={setShowYoYComparison}
+            />
+            <Label htmlFor="yoy-toggle" className="text-sm">
+              Jahresvergleich
+            </Label>
+          </div>
+          <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+        </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <KPICard
           title="Belegungsrate"
           value={formatPercent(safeSummary.totalOccupancyRate)}
@@ -152,6 +170,14 @@ export function ExecutiveOverview() {
           changeLabel="vs. Vormonat"
           icon={Euro}
           iconColor="text-green-500"
+        />
+        <KPICard
+          title="Umsatz YoY"
+          value={formatCurrency(safeSummary.monthlyRevenue)}
+          change={safeSummary.revenueChangeVsLastYear}
+          changeLabel="vs. Vorjahr"
+          icon={Euro}
+          iconColor="text-indigo-500"
         />
         <KPICard
           title="Verfügbare Einheiten"
@@ -204,6 +230,21 @@ export function ExecutiveOverview() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Year-over-Year Comparison */}
+      {showYoYComparison && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Jahresvergleich Umsatz</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <YearOverYearChart
+              data={safeMonthlyData}
+              height={300}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Occupancy Trend */}
       <Card>

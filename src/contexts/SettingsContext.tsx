@@ -24,6 +24,11 @@ export interface Settings {
   browserNotifications: boolean
   occupancyAlertThreshold: number
   revenueAlertThreshold: number
+  emailForMediumAlerts: boolean
+  pushForMediumAlerts: boolean
+  emailFrequency: 'immediate' | 'daily' | 'weekly'
+  notificationSound: boolean
+  pushPermissionRequested: boolean
   
   // Data & Export
   autoRefreshInterval: number // in seconds, 0 = disabled
@@ -48,6 +53,11 @@ const defaultSettings: Settings = {
   browserNotifications: false,
   occupancyAlertThreshold: 85,
   revenueAlertThreshold: 10,
+  emailForMediumAlerts: true,
+  pushForMediumAlerts: false,
+  emailFrequency: 'immediate',
+  notificationSound: true,
+  pushPermissionRequested: false,
   
   // Data & Export
   autoRefreshInterval: 300, // 5 minutes

@@ -26,6 +26,8 @@ export interface MonthlyMetrics {
   churnedCustomers: number
   occupiedUnits: number
   totalUnits: number
+  year?: number
+  isCurrentYear?: boolean
 }
 
 export interface UnitSizeMetrics {

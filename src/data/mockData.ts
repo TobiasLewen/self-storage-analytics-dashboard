@@ -91,32 +91,40 @@ function getRandomEndDate(startDate: string): string {
   return start.toISOString().split('T')[0]
 }
 
-// Generate monthly metrics (last 12 months)
+// Generate monthly metrics (last 24 months - current year + previous year)
 function generateMonthlyMetrics(): MonthlyMetrics[] {
   const metrics: MonthlyMetrics[] = []
   const currentDate = new Date()
 
-  for (let i = 11; i >= 0; i--) {
+  // Generate 24 months of data (current year + previous year)
+  for (let i = 23; i >= 0; i--) {
     const date = new Date(currentDate)
     date.setMonth(date.getMonth() - i)
     const monthName = date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' })
+    const year = date.getFullYear()
+    const isCurrentYear = year === currentDate.getFullYear()
 
     // Seasonal variation
     const month = date.getMonth()
     const seasonalFactor = 1 + Math.sin((month - 2) * Math.PI / 6) * 0.1
+    
+    // Add growth factor for current year (5% growth)
+    const growthFactor = isCurrentYear ? 1.05 : 1.0
 
     const baseOccupancy = 82 + Math.random() * 8
-    const occupancy = baseOccupancy * seasonalFactor
+    const occupancy = baseOccupancy * seasonalFactor * growthFactor
     const baseRevenue = 45000 + Math.random() * 8000
 
     metrics.push({
       month: monthName,
-      revenue: Math.round(baseRevenue * seasonalFactor),
+      revenue: Math.round(baseRevenue * seasonalFactor * growthFactor),
       occupancyRate: Math.min(95, Math.round(occupancy * 10) / 10),
-      newCustomers: Math.floor(5 + Math.random() * 10),
+      newCustomers: Math.floor(5 + Math.random() * 10 * growthFactor),
       churnedCustomers: Math.floor(2 + Math.random() * 6),
       occupiedUnits: Math.floor(125 * (occupancy / 100)),
       totalUnits: 125,
+      year: year,
+      isCurrentYear: isCurrentYear,
     })
   }
 
@@ -243,7 +251,9 @@ function computeForecastData(): ForecastData[] {
 function computeDashboardSummary(): DashboardSummary {
   const currentMonth = monthlyMetrics[monthlyMetrics.length - 1]
   const lastMonth = monthlyMetrics[monthlyMetrics.length - 2]
-  const lastYear = monthlyMetrics[0]
+  // Last year same month (12 months ago)
+  const lastYearIndex = monthlyMetrics.length - 13
+  const lastYear = monthlyMetrics[lastYearIndex >= 0 ? lastYearIndex : 0]
 
   const activeCustomers = customers.filter((c) => !c.endDate)
   const churnedLastMonth = monthlyMetrics[monthlyMetrics.length - 1].churnedCustomers
