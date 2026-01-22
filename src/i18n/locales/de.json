@@ -67,6 +67,7 @@
   "pages": {
     "executiveOverview": {
       "title": "Executive Overview",
+      "description": "Übersicht über wichtige Leistungsindikatoren und Diagramme für die Unternehmensführung",
       "occupancyRate": "Belegungsrate",
       "monthlyRevenue": "Monatlicher Umsatz",
       "revenueYoy": "Umsatz YoY",

@@ -86,7 +86,7 @@ export const MemoizedLineChart = memo(function MemoizedLineChart({
       {ariaDescription && (
         <p id="chart-desc" className="sr-only">{ariaDescription}</p>
       )}
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={300} minHeight={height}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis
@@ -185,7 +185,7 @@ export const MemoizedBarChart = memo(function MemoizedBarChart({
       {ariaDescription && (
         <p id="bar-chart-desc" className="sr-only">{ariaDescription}</p>
       )}
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={300} minHeight={height}>
         <BarChart data={data} layout={layout}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           {layout === 'vertical' ? (
@@ -295,7 +295,7 @@ export const MemoizedAreaChart = memo(function MemoizedAreaChart({
       {ariaDescription && (
         <p id="area-chart-desc" className="sr-only">{ariaDescription}</p>
       )}
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={300} minHeight={height}>
         <AreaChart data={data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
           <XAxis dataKey={xAxisKey} className="text-xs" tick={axisTickStyle} />
@@ -386,7 +386,7 @@ export const MemoizedPieChart = memo(function MemoizedPieChart({
       {ariaDescription && (
         <p id="pie-chart-desc" className="sr-only">{ariaDescription}</p>
       )}
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={300} minHeight={height}>
         <PieChart>
           <Pie
             data={data}

@@ -67,6 +67,7 @@
   "pages": {
     "executiveOverview": {
       "title": "Executive Overview",
+      "description": "Overview of key performance indicators and charts for executive decision making",
       "occupancyRate": "Occupancy Rate",
       "monthlyRevenue": "Monthly Revenue",
       "revenueYoy": "Revenue YoY",
