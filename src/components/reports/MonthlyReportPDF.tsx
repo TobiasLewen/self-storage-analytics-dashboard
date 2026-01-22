@@ -154,16 +154,59 @@ const styles = StyleSheet.create({
   },
 })
 
+interface PDFTranslations {
+  monthlyBusinessReport: string
+  reportPeriod: string
+  createdAt: string
+  kpiOverview: string
+  occupancyRate: string
+  monthlyRevenue: string
+  vsPreviousMonth: string
+  activeCustomers: string
+  availableUnits: string
+  avgRentalDuration: string
+  months: string
+  churnRate: string
+  unitPerformanceBySize: string
+  columns: {
+    size: string
+    total: string
+    occupied: string
+    occupancy: string
+    avgPrice: string
+    revenue: string
+  }
+  revenueLast3Months: string
+  month: string
+  revenue: string
+  occupancy: string
+  customerSegments: string
+  segment: string
+  count: string
+  share: string
+  privateCustomers: string
+  businessCustomers: string
+  summary: string
+  summaryText: string
+  revenueIncreased: string
+  revenueDecreased: string
+  customerLifetimeValue: string
+  confidential: string
+  pageOf: string
+}
+
 interface MonthlyReportPDFProps {
   summary: DashboardSummary
   unitMetrics: UnitSizeMetrics[]
   monthlyData: MonthlyMetrics[]
   customerSegments: CustomerSegment[]
   reportMonth: string
+  translations: PDFTranslations
+  locale?: string
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('de-DE', {
+function formatCurrencyForPDF(value: number, locale: string = 'de-DE'): string {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'EUR',
   }).format(value)
@@ -179,14 +222,18 @@ export function MonthlyReportPDF({
   monthlyData,
   customerSegments,
   reportMonth,
+  translations: t,
+  locale = 'de-DE',
 }: MonthlyReportPDFProps) {
-  const generatedDate = new Date().toLocaleDateString('de-DE', {
+  const generatedDate = new Date().toLocaleDateString(locale, {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   })
+
+  const formatCurrency = (value: number) => formatCurrencyForPDF(value, locale)
 
   const last3Months = monthlyData.slice(-3)
   const totalRevenue3Months = last3Months.reduce((sum, m) => sum + m.revenue, 0)
@@ -199,41 +246,41 @@ export function MonthlyReportPDF({
         <View style={styles.header}>
           <Text style={styles.logo}>StorageHub</Text>
           <Text style={styles.subtitle}>Self-Storage Analytics</Text>
-          <Text style={styles.reportTitle}>Monatlicher Geschäftsbericht</Text>
+          <Text style={styles.reportTitle}>{t.monthlyBusinessReport}</Text>
           <Text style={styles.reportDate}>
-            Berichtszeitraum: {reportMonth} | Erstellt am: {generatedDate}
+            {t.reportPeriod}: {reportMonth} | {t.createdAt}: {generatedDate}
           </Text>
         </View>
 
         {/* KPI Overview */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Kennzahlen Übersicht</Text>
+          <Text style={styles.sectionTitle}>{t.kpiOverview}</Text>
           <View style={styles.kpiGrid}>
             <View style={styles.kpiCard}>
-              <Text style={styles.kpiLabel}>Belegungsrate</Text>
+              <Text style={styles.kpiLabel}>{t.occupancyRate}</Text>
               <Text style={styles.kpiValue}>{formatPercent(summary.totalOccupancyRate)}</Text>
             </View>
             <View style={styles.kpiCard}>
-              <Text style={styles.kpiLabel}>Monatlicher Umsatz</Text>
+              <Text style={styles.kpiLabel}>{t.monthlyRevenue}</Text>
               <Text style={styles.kpiValue}>{formatCurrency(summary.monthlyRevenue)}</Text>
               <Text style={[styles.kpiChange, summary.revenueChangePercent >= 0 ? styles.positive : styles.negative]}>
-                {summary.revenueChangePercent >= 0 ? '+' : ''}{summary.revenueChangePercent.toFixed(1)}% vs. Vormonat
+                {summary.revenueChangePercent >= 0 ? '+' : ''}{summary.revenueChangePercent.toFixed(1)}% {t.vsPreviousMonth}
               </Text>
             </View>
             <View style={styles.kpiCard}>
-              <Text style={styles.kpiLabel}>Aktive Kunden</Text>
+              <Text style={styles.kpiLabel}>{t.activeCustomers}</Text>
               <Text style={styles.kpiValue}>{summary.totalCustomers}</Text>
             </View>
             <View style={styles.kpiCard}>
-              <Text style={styles.kpiLabel}>Verfügbare Einheiten</Text>
+              <Text style={styles.kpiLabel}>{t.availableUnits}</Text>
               <Text style={styles.kpiValue}>{summary.availableUnits} / {summary.totalUnits}</Text>
             </View>
             <View style={styles.kpiCard}>
-              <Text style={styles.kpiLabel}>Ø Mietdauer</Text>
-              <Text style={styles.kpiValue}>{summary.avgRentalDuration} Monate</Text>
+              <Text style={styles.kpiLabel}>{t.avgRentalDuration}</Text>
+              <Text style={styles.kpiValue}>{summary.avgRentalDuration} {t.months}</Text>
             </View>
             <View style={styles.kpiCard}>
-              <Text style={styles.kpiLabel}>Churn Rate</Text>
+              <Text style={styles.kpiLabel}>{t.churnRate}</Text>
               <Text style={styles.kpiValue}>{formatPercent(summary.churnRate)}</Text>
             </View>
           </View>
@@ -241,15 +288,15 @@ export function MonthlyReportPDF({
 
         {/* Unit Performance Table */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Einheiten Performance nach Größe</Text>
+          <Text style={styles.sectionTitle}>{t.unitPerformanceBySize}</Text>
           <View style={styles.table}>
             <View style={styles.tableHeader}>
-              <Text style={[styles.tableHeaderCell, styles.col1]}>Größe</Text>
-              <Text style={[styles.tableHeaderCell, styles.col2]}>Gesamt</Text>
-              <Text style={[styles.tableHeaderCell, styles.col3]}>Belegt</Text>
-              <Text style={[styles.tableHeaderCell, styles.col4]}>Belegung</Text>
-              <Text style={[styles.tableHeaderCell, styles.col5]}>Ø Preis</Text>
-              <Text style={[styles.tableHeaderCell, styles.col6]}>Umsatz</Text>
+              <Text style={[styles.tableHeaderCell, styles.col1]}>{t.columns.size}</Text>
+              <Text style={[styles.tableHeaderCell, styles.col2]}>{t.columns.total}</Text>
+              <Text style={[styles.tableHeaderCell, styles.col3]}>{t.columns.occupied}</Text>
+              <Text style={[styles.tableHeaderCell, styles.col4]}>{t.columns.occupancy}</Text>
+              <Text style={[styles.tableHeaderCell, styles.col5]}>{t.columns.avgPrice}</Text>
+              <Text style={[styles.tableHeaderCell, styles.col6]}>{t.columns.revenue}</Text>
             </View>
             {unitMetrics.map((unit, index) => (
               <View key={unit.size} style={[styles.tableRow, index % 2 === 1 ? styles.tableRowAlt : {}]}>
@@ -268,12 +315,12 @@ export function MonthlyReportPDF({
         <View style={styles.twoColumn}>
           {/* Revenue Trend */}
           <View style={styles.column}>
-            <Text style={styles.sectionTitle}>Umsatz (letzte 3 Monate)</Text>
+            <Text style={styles.sectionTitle}>{t.revenueLast3Months}</Text>
             <View style={styles.table}>
               <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeaderCell, { width: '40%' }]}>Monat</Text>
-                <Text style={[styles.tableHeaderCell, { width: '30%' }]}>Umsatz</Text>
-                <Text style={[styles.tableHeaderCell, { width: '30%' }]}>Belegung</Text>
+                <Text style={[styles.tableHeaderCell, { width: '40%' }]}>{t.month}</Text>
+                <Text style={[styles.tableHeaderCell, { width: '30%' }]}>{t.revenue}</Text>
+                <Text style={[styles.tableHeaderCell, { width: '30%' }]}>{t.occupancy}</Text>
               </View>
               {last3Months.map((month, index) => (
                 <View key={month.month} style={[styles.tableRow, index % 2 === 1 ? styles.tableRowAlt : {}]}>
@@ -287,17 +334,17 @@ export function MonthlyReportPDF({
 
           {/* Customer Segments */}
           <View style={styles.column}>
-            <Text style={styles.sectionTitle}>Kundensegmente</Text>
+            <Text style={styles.sectionTitle}>{t.customerSegments}</Text>
             <View style={styles.table}>
               <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeaderCell, { width: '40%' }]}>Segment</Text>
-                <Text style={[styles.tableHeaderCell, { width: '30%' }]}>Anzahl</Text>
-                <Text style={[styles.tableHeaderCell, { width: '30%' }]}>Anteil</Text>
+                <Text style={[styles.tableHeaderCell, { width: '40%' }]}>{t.segment}</Text>
+                <Text style={[styles.tableHeaderCell, { width: '30%' }]}>{t.count}</Text>
+                <Text style={[styles.tableHeaderCell, { width: '30%' }]}>{t.share}</Text>
               </View>
               {customerSegments.map((segment, index) => (
                 <View key={segment.type} style={[styles.tableRow, index % 2 === 1 ? styles.tableRowAlt : {}]}>
                   <Text style={[styles.tableCell, { width: '40%' }]}>
-                    {segment.type === 'private' ? 'Privatkunden' : 'Geschäftskunden'}
+                    {segment.type === 'private' ? t.privateCustomers : t.businessCustomers}
                   </Text>
                   <Text style={[styles.tableCell, { width: '30%' }]}>{segment.count}</Text>
                   <Text style={[styles.tableCell, { width: '30%' }]}>{formatPercent(segment.percentage)}</Text>
@@ -310,23 +357,23 @@ export function MonthlyReportPDF({
         {/* Summary */}
         <View style={styles.section}>
           <View style={styles.summaryBox}>
-            <Text style={styles.summaryTitle}>Zusammenfassung</Text>
+            <Text style={styles.summaryTitle}>{t.summary}</Text>
             <Text style={styles.summaryText}>
-              Im Berichtszeitraum wurde ein Gesamtumsatz von {formatCurrency(totalRevenue3Months)} erzielt
-              (letzte 3 Monate). Die durchschnittliche Belegungsrate lag bei {formatPercent(avgOccupancy3Months)}.
-              {summary.revenueChangePercent >= 0
-                ? ` Der Umsatz ist im Vergleich zum Vormonat um ${summary.revenueChangePercent.toFixed(1)}% gestiegen.`
-                : ` Der Umsatz ist im Vergleich zum Vormonat um ${Math.abs(summary.revenueChangePercent).toFixed(1)}% gesunken.`
+              {t.summaryText
+                .replace('{{totalRevenue}}', formatCurrency(totalRevenue3Months))
+                .replace('{{avgOccupancy}}', formatPercent(avgOccupancy3Months))
+                .replace('{{changePercent}}', Math.abs(summary.revenueChangePercent).toFixed(1))
+                .replace('{{changeDirection}}', summary.revenueChangePercent >= 0 ? t.revenueIncreased : t.revenueDecreased)
               }
-              {' '}Der Customer Lifetime Value beträgt durchschnittlich {formatCurrency(summary.avgCustomerLifetimeValue)}.
+              {' '}{t.customerLifetimeValue.replace('{{value}}', formatCurrency(summary.avgCustomerLifetimeValue))}
             </Text>
           </View>
         </View>
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>StorageHub Analytics | Vertraulich</Text>
-          <Text style={styles.footerText}>Seite 1 von 1</Text>
+          <Text style={styles.footerText}>StorageHub Analytics | {t.confidential}</Text>
+          <Text style={styles.footerText}>{t.pageOf}</Text>
         </View>
       </Page>
     </Document>

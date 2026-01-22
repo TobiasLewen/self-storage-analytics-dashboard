@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { pdf } from '@react-pdf/renderer'
 import { utils, writeFile } from 'xlsx'
 import { FileDown, Loader2, FileText, FileSpreadsheet } from 'lucide-react'
@@ -18,7 +19,51 @@ import {
 } from '@/data/mockData'
 
 export function ExportButton() {
+  const { t, i18n } = useTranslation()
   const [isGenerating, setIsGenerating] = useState(false)
+
+  const locale = i18n.language === 'de' ? 'de-DE' : 'en-US'
+
+  const getPDFTranslations = () => ({
+    monthlyBusinessReport: t('reports.monthlyBusinessReport'),
+    reportPeriod: t('reports.reportPeriod'),
+    createdAt: t('reports.createdAt'),
+    kpiOverview: t('reports.kpiOverview'),
+    occupancyRate: t('reports.occupancyRate'),
+    monthlyRevenue: t('reports.monthlyRevenue'),
+    vsPreviousMonth: t('reports.vsPreviousMonth'),
+    activeCustomers: t('reports.activeCustomers'),
+    availableUnits: t('reports.availableUnits'),
+    avgRentalDuration: t('reports.avgRentalDuration'),
+    months: t('reports.months'),
+    churnRate: t('reports.churnRate'),
+    unitPerformanceBySize: t('reports.unitPerformanceBySize'),
+    columns: {
+      size: t('reports.columns.size'),
+      total: t('reports.columns.total'),
+      occupied: t('reports.columns.occupied'),
+      occupancy: t('reports.columns.occupancy'),
+      avgPrice: t('reports.columns.avgPrice'),
+      revenue: t('reports.columns.revenue'),
+    },
+    revenueLast3Months: t('reports.revenueLast3Months'),
+    month: t('reports.month'),
+    revenue: t('reports.revenue'),
+    occupancy: t('reports.occupancy'),
+    customerSegments: t('reports.customerSegments'),
+    segment: t('reports.segment'),
+    count: t('reports.count'),
+    share: t('reports.share'),
+    privateCustomers: t('reports.privateCustomers'),
+    businessCustomers: t('reports.businessCustomers'),
+    summary: t('reports.summary'),
+    summaryText: t('reports.summaryText'),
+    revenueIncreased: t('reports.revenueIncreased'),
+    revenueDecreased: t('reports.revenueDecreased'),
+    customerLifetimeValue: t('reports.customerLifetimeValue'),
+    confidential: t('reports.confidential'),
+    pageOf: t('reports.pageOf'),
+  })
 
   const handleExportPDF = async () => {
     setIsGenerating(true)
@@ -29,7 +74,7 @@ export function ExportButton() {
       const customerSegments = getCustomerSegments()
 
       const currentDate = new Date()
-      const reportMonth = currentDate.toLocaleDateString('de-DE', {
+      const reportMonth = currentDate.toLocaleDateString(locale, {
         month: 'long',
         year: 'numeric',
       })
@@ -41,6 +86,8 @@ export function ExportButton() {
           monthlyData={monthlyMetrics}
           customerSegments={customerSegments}
           reportMonth={reportMonth}
+          translations={getPDFTranslations()}
+          locale={locale}
         />
       ).toBlob()
 

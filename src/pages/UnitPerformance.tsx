@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { DateRange } from 'react-day-picker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedBarChart } from '@/components/charts/MemoizedCharts'
@@ -70,6 +71,7 @@ function UnitPerformanceSkeleton() {
 }
 
 export function UnitPerformance() {
+  const { t } = useTranslation()
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const end = new Date()
     const start = new Date()
@@ -137,7 +139,7 @@ export function UnitPerformance() {
 
   // Define table columns
   const unitPerformanceColumns: ColumnDef<UnitSizeMetrics>[] = [
-    createSortableColumn('size', 'Größe', ({ getValue, row }) => {
+    createSortableColumn('size', t('pages.unitPerformance.columns.size'), ({ getValue, row }) => {
       const index = row.index
       return (
         <Badge
@@ -148,13 +150,13 @@ export function UnitPerformance() {
         </Badge>
       )
     }),
-    createSortableColumn('totalUnits', 'Einheiten', ({ getValue }) => (
+    createSortableColumn('totalUnits', t('pages.unitPerformance.columns.unit'), ({ getValue }) => (
       <div className="text-right">{getValue() as number}</div>
     )),
-    createSortableColumn('occupiedUnits', 'Belegt', ({ getValue }) => (
+    createSortableColumn('occupiedUnits', t('pages.unitPerformance.columns.occupied'), ({ getValue }) => (
       <div className="text-right">{getValue() as number}</div>
     )),
-    createSortableColumn('occupancyRate', 'Belegung', ({ getValue }) => {
+    createSortableColumn('occupancyRate', t('pages.unitPerformance.columns.occupancy'), ({ getValue }) => {
       const occupancyRate = getValue() as number
       const occupancyStatus = getOccupancyStatus(occupancyRate)
       const OccupancyStatusIcon = OccupancyIcon[occupancyStatus]
@@ -170,18 +172,18 @@ export function UnitPerformance() {
         </div>
       )
     }),
-    createSortableColumn('avgPrice', 'Ø Preis', ({ getValue }) => (
+    createSortableColumn('avgPrice', t('pages.unitPerformance.columns.avgPrice'), ({ getValue }) => (
       <div className="text-right">{formatCurrency(getValue() as number)}</div>
     )),
-    createSortableColumn('revenuePerSqm', '€/m²', ({ getValue }) => (
+    createSortableColumn('revenuePerSqm', t('pages.unitPerformance.columns.revenuePerSqm'), ({ getValue }) => (
       <div className="text-right font-medium">{formatCurrency(getValue() as number)}</div>
     )),
-    createSortableColumn('totalRevenue', 'Gesamt', ({ getValue }) => (
+    createSortableColumn('totalRevenue', t('pages.unitPerformance.columns.totalRevenue'), ({ getValue }) => (
       <div className="text-right">{formatCurrency(getValue() as number)}</div>
     )),
     {
       accessorKey: 'trend',
-      header: 'Trend',
+      header: t('common.sort'),
       cell: ({ row }) => {
         const item = row.original
         const comparison = compareUnitRevenueToAverage(item.revenuePerSqm, safeUnitSizeData)
@@ -191,12 +193,12 @@ export function UnitPerformance() {
             {isAboveAvg ? (
               <div className="flex items-center text-green-600">
                 <ArrowUpRight className="h-4 w-4" />
-                <span className="text-xs">{getTrendLabel('above')}</span>
+                <span className="text-xs">{t('pages.unitPerformance.trend.above')}</span>
               </div>
             ) : (
               <div className="flex items-center text-red-600">
                 <ArrowDownRight className="h-4 w-4" />
-                <span className="text-xs">{getTrendLabel('below')}</span>
+                <span className="text-xs">{t('pages.unitPerformance.trend.below')}</span>
               </div>
             )}
           </div>
@@ -210,9 +212,9 @@ export function UnitPerformance() {
       {/* Header with Date Range */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Unit Performance</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{t('pages.unitPerformance.title')}</h2>
           <p className="text-muted-foreground">
-            Analyse der Einheiten-Leistung und Belegung
+            {t('pages.unitPerformance.analysis')}
           </p>
         </div>
         <DateRangePicker date={dateRange} onDateChange={setDateRange} />
@@ -227,7 +229,7 @@ export function UnitPerformance() {
                 <TrendingUp className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Profitabelste Größe</p>
+                <p className="text-sm text-muted-foreground">{t('pages.unitPerformance.mostProfitable')}</p>
                 <p className="text-2xl font-bold">{mostProfitable.size}</p>
                 <p className="text-sm text-green-600">
                   {formatCurrency(mostProfitable.revenuePerSqm)}/m²
@@ -244,7 +246,7 @@ export function UnitPerformance() {
                 <TrendingDown className="h-6 w-6 text-red-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Am wenigsten profitabel</p>
+                <p className="text-sm text-muted-foreground">{t('pages.unitPerformance.leastProfitable')}</p>
                 <p className="text-2xl font-bold">{leastProfitable.size}</p>
                 <p className="text-sm text-red-600">
                   {formatCurrency(leastProfitable.revenuePerSqm)}/m²
@@ -261,9 +263,9 @@ export function UnitPerformance() {
                 <Minus className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Einheiten-Fluktuation</p>
+                <p className="text-sm text-muted-foreground">{t('pages.unitPerformance.unitTurnover')}</p>
                 <p className="text-2xl font-bold">{turnoverRate.toFixed(1)}%</p>
-                <p className="text-sm text-muted-foreground">pro Monat</p>
+                <p className="text-sm text-muted-foreground">{t('pages.unitPerformance.perMonth')}</p>
               </div>
             </div>
           </CardContent>
@@ -273,7 +275,7 @@ export function UnitPerformance() {
       {/* Occupancy by Size Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Belegungsrate nach Größe</CardTitle>
+          <CardTitle>{t('pages.unitPerformance.occupancyBySize')}</CardTitle>
         </CardHeader>
         <CardContent>
           <MemoizedBarChart
@@ -294,7 +296,7 @@ export function UnitPerformance() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Umsatz pro Quadratmeter</CardTitle>
+            <CardTitle>{t('pages.unitPerformance.revenuePerSqm')}</CardTitle>
             <ExportButton />
           </div>
         </CardHeader>
@@ -303,7 +305,7 @@ export function UnitPerformance() {
             columns={unitPerformanceColumns}
             data={safeUnitSizeData}
             searchKey="size"
-            searchPlaceholder="Größe suchen..."
+            searchPlaceholder={t('pages.unitPerformance.search')}
           />
         </CardContent>
       </Card>

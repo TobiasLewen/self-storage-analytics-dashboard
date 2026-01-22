@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedAreaChart, MemoizedLineChart } from '@/components/charts/MemoizedCharts'
 import { AlertCard } from '@/components/cards/AlertCard'
@@ -102,6 +103,7 @@ function ForecastSkeleton() {
 }
 
 export function Forecast() {
+  const { t } = useTranslation()
   const { forecast: forecastData, isLoading: forecastLoading, error: forecastError, refetch: refetchForecast } = useForecast()
   const { alerts: pricingAlerts, isLoading: alertsLoading, error: alertsError, refetch: refetchAlerts } = usePricingAlerts()
   const { metrics: unitSizeData, isLoading: unitsLoading, error: unitsError, refetch: refetchUnits } = useUnitMetrics()
@@ -173,7 +175,7 @@ export function Forecast() {
     x: forecastStartMonth,
     stroke: 'hsl(var(--muted-foreground))',
     strokeDasharray: '5 5',
-    label: { value: 'Prognose Start', position: 'top', fill: 'hsl(var(--muted-foreground))' },
+    label: { value: t('pages.forecast.forecastStart'), position: 'top', fill: 'hsl(var(--muted-foreground))' },
   }
 
   return (
@@ -187,9 +189,9 @@ export function Forecast() {
                 <TrendingUp className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">3-Monats Prognose</p>
+                <p className="text-sm text-muted-foreground">{t('pages.forecast.threeMonthForecast')}</p>
                 <p className="text-2xl font-bold">{formatCurrency(totalForecast)}</p>
-                <p className="text-sm text-green-600">+6% vs. Vorjahr</p>
+                <p className="text-sm text-green-600">+6% {t('pages.forecast.vsPreviousYear')}</p>
               </div>
             </div>
           </CardContent>
@@ -202,9 +204,9 @@ export function Forecast() {
                 <AlertCircle className="h-6 w-6 text-orange-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Preisanpassungen</p>
+                <p className="text-sm text-muted-foreground">{t('pages.forecast.priceAdjustments')}</p>
                 <p className="text-2xl font-bold">{pricingAlerts.length}</p>
-                <p className="text-sm text-muted-foreground">empfohlen</p>
+                <p className="text-sm text-muted-foreground">{t('pages.forecast.recommended')}</p>
               </div>
             </div>
           </CardContent>
@@ -217,9 +219,9 @@ export function Forecast() {
                 <Calendar className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Saisonaler Trend</p>
-                <p className="text-2xl font-bold">Stabil</p>
-                <p className="text-sm text-muted-foreground">nächste 3 Monate</p>
+                <p className="text-sm text-muted-foreground">{t('pages.forecast.seasonalTrend')}</p>
+                <p className="text-2xl font-bold">{t('pages.forecast.stable')}</p>
+                <p className="text-sm text-muted-foreground">{t('pages.forecast.nextThreeMonths')}</p>
               </div>
             </div>
           </CardContent>
@@ -229,7 +231,7 @@ export function Forecast() {
       {/* Revenue Forecast Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>3-Monats Umsatzprognose</CardTitle>
+          <CardTitle>{t('pages.forecast.revenueForecast')}</CardTitle>
         </CardHeader>
         <CardContent>
           <MemoizedAreaChart
@@ -255,7 +257,7 @@ export function Forecast() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lightbulb className="h-5 w-5 text-yellow-500" />
-              Preisempfehlungen
+              {t('pages.forecast.pricingRecommendations')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -278,7 +280,7 @@ export function Forecast() {
                         : 'secondary'
                     }
                   >
-                    {rec.occupancy.toFixed(0)}% belegt
+                    {rec.occupancy.toFixed(0)}% {t('pages.forecast.occupied')}
                   </Badge>
                 </div>
               ))}
@@ -289,7 +291,7 @@ export function Forecast() {
         {/* Seasonal Trends */}
         <Card>
           <CardHeader>
-            <CardTitle>Saisonale Trends</CardTitle>
+            <CardTitle>{t('pages.forecast.seasonalTrends')}</CardTitle>
           </CardHeader>
           <CardContent>
             <MemoizedLineChart

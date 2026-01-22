@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { DateRange } from 'react-day-picker'
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -58,6 +59,7 @@ const revenueYAxisFormatter = (value: number) => `${(value / 1000).toFixed(0)}k`
 const occupancyYAxisFormatter = (value: number) => `${value}%`
 
 export function ExecutiveOverview() {
+  const { t } = useTranslation()
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const end = new Date()
     const start = new Date()
@@ -134,9 +136,9 @@ export function ExecutiveOverview() {
       {/* Date Range Filter */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Dashboard Übersicht</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{t('pages.executiveOverview.title')}</h2>
           <p className="text-muted-foreground">
-            Ihre wichtigsten Kennzahlen auf einen Blick
+            {t('pages.executiveOverview.description')}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -147,7 +149,7 @@ export function ExecutiveOverview() {
               onCheckedChange={setShowYoYComparison}
             />
             <Label htmlFor="yoy-toggle" className="text-sm">
-              Jahresvergleich
+              {t('pages.executiveOverview.yearOverYearComparison')}
             </Label>
           </div>
           <DateRangePicker date={dateRange} onDateChange={setDateRange} />
@@ -157,36 +159,36 @@ export function ExecutiveOverview() {
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <KPICard
-          title="Belegungsrate"
+          title={t('pages.executiveOverview.kpis.occupancyRate')}
           value={formatPercent(safeSummary.totalOccupancyRate)}
           icon={Percent}
           iconColor="text-blue-500"
         />
         <KPICard
-          title="Monatlicher Umsatz"
+          title={t('pages.executiveOverview.kpis.monthlyRevenue')}
           value={formatCurrency(safeSummary.monthlyRevenue)}
           change={safeSummary.revenueChangePercent}
-          changeLabel="vs. Vormonat"
+          changeLabel={t('pages.executiveOverview.kpis.vsLastMonth')}
           icon={Euro}
           iconColor="text-green-500"
         />
         <KPICard
-          title="Umsatz YoY"
+          title={t('pages.executiveOverview.kpis.revenueYoY')}
           value={formatCurrency(safeSummary.monthlyRevenue)}
           change={safeSummary.revenueChangeVsLastYear}
-          changeLabel="vs. Vorjahr"
+          changeLabel={t('pages.executiveOverview.kpis.vsLastYear')}
           icon={Euro}
           iconColor="text-indigo-500"
         />
         <KPICard
-          title="Verfügbare Einheiten"
+          title={t('pages.executiveOverview.kpis.availableUnits')}
           value={`${safeSummary.availableUnits} / ${safeSummary.totalUnits}`}
           icon={Box}
           iconColor="text-orange-500"
         />
         <KPICard
-          title="Ø Mietdauer"
-          value={`${safeSummary.avgRentalDuration} Monate`}
+          title={t('pages.executiveOverview.kpis.avgRentalDuration')}
+          value={`${safeSummary.avgRentalDuration} ${t('pages.executiveOverview.kpis.months')}`}
           icon={Clock}
           iconColor="text-purple-500"
         />
@@ -197,7 +199,7 @@ export function ExecutiveOverview() {
         {/* Revenue Trend */}
         <Card>
           <CardHeader>
-            <CardTitle>Umsatzentwicklung (12 Monate)</CardTitle>
+            <CardTitle>{t('pages.executiveOverview.charts.revenueTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
             <MemoizedLineChart
@@ -214,7 +216,7 @@ export function ExecutiveOverview() {
         {/* Units by Size */}
         <Card>
           <CardHeader>
-            <CardTitle>Einheiten nach Größe</CardTitle>
+            <CardTitle>{t('pages.executiveOverview.charts.unitsBySize')}</CardTitle>
           </CardHeader>
           <CardContent>
             <MemoizedBarChart
@@ -234,7 +236,7 @@ export function ExecutiveOverview() {
       {showYoYComparison && (
         <Card>
           <CardHeader>
-            <CardTitle>Jahresvergleich Umsatz</CardTitle>
+            <CardTitle>{t('pages.executiveOverview.charts.yearOverYearRevenue')}</CardTitle>
           </CardHeader>
           <CardContent>
             <YearOverYearChart
@@ -248,7 +250,7 @@ export function ExecutiveOverview() {
       {/* Occupancy Trend */}
       <Card>
         <CardHeader>
-          <CardTitle>Belegungsrate (12 Monate)</CardTitle>
+          <CardTitle>{t('pages.executiveOverview.charts.occupancyTrend')}</CardTitle>
         </CardHeader>
           <CardContent>
             <MemoizedLineChart

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { KPICard } from '@/components/cards/KPICard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MemoizedLineChart, MemoizedPieChart } from '@/components/charts/MemoizedCharts'
@@ -16,17 +17,6 @@ import { Users, UserMinus, Euro, Building2 } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 
 const COLORS = ['#3b82f6', '#22c55e']
-
-// Chart configurations - defined outside component
-const CUSTOMER_TREND_LINE_CONFIG = [
-  { dataKey: 'newCustomers', name: 'Neue Kunden', stroke: '#22c55e', dot: { fill: '#22c55e' } },
-  { dataKey: 'churnedCustomers', name: 'Abgegangen', stroke: '#ef4444', dot: { fill: '#ef4444' } },
-]
-
-const pieLabelFormatter = (entry: { name: string; percent?: number }) =>
-  `${entry.name}: ${((entry.percent ?? 0) * 100).toFixed(0)}%`
-
-const pieTooltipFormatter = (value: number) => [`${value} Kunden`, ''] as [string, string]
 
 function CustomerAnalyticsSkeleton() {
   return (
@@ -47,11 +37,23 @@ function CustomerAnalyticsSkeleton() {
 }
 
 export function CustomerAnalytics() {
+  const { t } = useTranslation()
   const { summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary } = useDashboardSummary()
   const { segments, isLoading: segmentsLoading, error: segmentsError, refetch: refetchSegments } = useCustomerSegments()
   const { metrics: monthlyData, isLoading: metricsLoading, error: metricsError, refetch: refetchMetrics } = useMonthlyMetrics()
   const { customers: customersData, isLoading: customersLoading, error: customersError, refetch: refetchCustomers } = useCustomers()
   const { units: unitsData, isLoading: unitsLoading, error: unitsError, refetch: refetchUnits } = useUnits()
+
+  // Chart configurations with translations
+  const customerTrendLineConfig = [
+    { dataKey: 'newCustomers', name: t('pages.customerAnalytics.charts.newCustomers'), stroke: '#22c55e', dot: { fill: '#22c55e' } },
+    { dataKey: 'churnedCustomers', name: t('pages.customerAnalytics.charts.churnedCustomers'), stroke: '#ef4444', dot: { fill: '#ef4444' } },
+  ]
+
+  const pieLabelFormatter = (entry: { name: string; percent?: number }) =>
+    `${entry.name}: ${((entry.percent ?? 0) * 100).toFixed(0)}%`
+
+  const pieTooltipFormatter = (value: number) => [`${value} ${t('pages.customerAnalytics.charts.customers')}`, ''] as [string, string]
 
   const isLoading = summaryLoading || segmentsLoading || metricsLoading || customersLoading || unitsLoading
   const error = summaryError || segmentsError || metricsError || customersError || unitsError
@@ -143,28 +145,28 @@ export function CustomerAnalytics() {
   }))
 
   // Prepare pie chart data with translated names
-  const pieChartData = safeSegments.map(s => ({ ...s, name: s.type === 'private' ? 'Privat' : 'Geschäft' }))
+  const pieChartData = safeSegments.map(s => ({ ...s, name: t(`pages.customerAnalytics.customerTypes.${s.type}`) }))
 
   // Define table columns
   const customerColumns: ColumnDef<typeof customerRevenue[0]>[] = [
-    createSortableColumn('name', 'Kunde', ({ getValue }) => (
+    createSortableColumn('name', t('pages.customerAnalytics.columns.customer'), ({ getValue }) => (
       <div className="font-medium">{getValue() as string}</div>
     )),
-    createSortableColumn('type', 'Typ', ({ getValue }) => {
+    createSortableColumn('type', t('pages.customerAnalytics.columns.type'), ({ getValue }) => {
       const type = getValue() as string
       return (
         <Badge variant={type === 'business' ? 'default' : 'secondary'}>
-          {type === 'business' ? 'Geschäft' : 'Privat'}
+          {t(`pages.customerAnalytics.customerTypes.${type}`)}
         </Badge>
       )
     }),
-    createSortableColumn('unitsCount', 'Einheiten', ({ getValue }) => (
+    createSortableColumn('unitsCount', t('pages.customerAnalytics.columns.units'), ({ getValue }) => (
       <div className="text-right">{getValue() as number}</div>
     )),
-    createSortableColumn('monthlyRevenue', 'Monatl. Umsatz', ({ getValue }) => (
+    createSortableColumn('monthlyRevenue', t('pages.customerAnalytics.columns.monthlyRevenue'), ({ getValue }) => (
       <div className="text-right font-medium">{formatCurrency(getValue() as number)}</div>
     )),
-    createSortableColumn('startDate', 'Seit', ({ getValue }) => {
+    createSortableColumn('startDate', t('pages.customerAnalytics.columns.since'), ({ getValue }) => {
       const date = new Date(getValue() as string)
       return date.toLocaleDateString('de-DE', {
         month: 'short',
@@ -178,25 +180,25 @@ export function CustomerAnalytics() {
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Aktive Kunden"
+          title={t('pages.customerAnalytics.activeCustomers')}
           value={safeSummary.totalCustomers.toString()}
           icon={Users}
           iconColor="text-blue-500"
         />
         <KPICard
-          title="Churn Rate"
+          title={t('pages.customerAnalytics.churnRate')}
           value={formatPercent(safeSummary.churnRate)}
           icon={UserMinus}
           iconColor="text-red-500"
         />
         <KPICard
-          title="Ø Customer Lifetime Value"
+          title={t('pages.customerAnalytics.avgCustomerLifetimeValue')}
           value={formatCurrency(safeSummary.avgCustomerLifetimeValue)}
           icon={Euro}
           iconColor="text-green-500"
         />
         <KPICard
-          title="Geschäftskunden"
+          title={t('pages.customerAnalytics.businessCustomers')}
           value={`${safeSegments.find((s) => s.type === 'business')?.count || 0}`}
           icon={Building2}
           iconColor="text-purple-500"
@@ -208,12 +210,12 @@ export function CustomerAnalytics() {
         {/* New Customers Trend */}
         <Card>
           <CardHeader>
-            <CardTitle>Kundenentwicklung (12 Monate)</CardTitle>
+            <CardTitle>{t('pages.customerAnalytics.customerDevelopment')}</CardTitle>
           </CardHeader>
           <CardContent>
             <MemoizedLineChart
               data={customerTrendData}
-              lines={CUSTOMER_TREND_LINE_CONFIG}
+              lines={customerTrendLineConfig}
               xAxisKey="month"
               height={300}
               showLegend
@@ -224,7 +226,7 @@ export function CustomerAnalytics() {
         {/* Customer Segmentation */}
         <Card>
           <CardHeader>
-            <CardTitle>Kundensegmentierung</CardTitle>
+            <CardTitle>{t('pages.customerAnalytics.customerSegmentation')}</CardTitle>
           </CardHeader>
           <CardContent>
             <MemoizedPieChart
@@ -244,7 +246,7 @@ export function CustomerAnalytics() {
                     style={{ backgroundColor: COLORS[index] }}
                   />
                   <span className="text-sm">
-                    {segment.type === 'private' ? 'Privat' : 'Geschäft'}:{' '}
+                    {t(`pages.customerAnalytics.customerTypes.${segment.type}`)}:{' '}
                     {segment.count} ({segment.percentage}%)
                   </span>
                 </div>
@@ -258,7 +260,7 @@ export function CustomerAnalytics() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Top Kunden nach Umsatz</CardTitle>
+            <CardTitle>{t('pages.customerAnalytics.topCustomers')}</CardTitle>
             <ExportButton />
           </div>
         </CardHeader>
@@ -267,7 +269,7 @@ export function CustomerAnalytics() {
             columns={customerColumns}
             data={customerRevenue}
             searchKey="name"
-            searchPlaceholder="Kunden suchen..."
+            searchPlaceholder={t('pages.customerAnalytics.search')}
           />
         </CardContent>
       </Card>

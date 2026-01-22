@@ -75,6 +75,49 @@
       "yearComparison": "Jahresvergleich Umsatz",
       "occupancyRateChart": "Belegungsrate (12 Monate)"
     },
+    "customerAnalytics": {
+      "title": "Customer Analytics",
+      "customerDevelopment": "Kundenentwicklung (12 Monate)",
+      "topCustomers": "Top Kunden nach Umsatz",
+      "churnRate": "Churn Rate",
+      "avgCustomerLifetimeValue": "Ø Customer Lifetime Value",
+      "monthlyRevenue": "Monatl. Umsatz",
+      "activeCustomers": "Aktive Kunden",
+      "businessCustomers": "Geschäftskunden",
+      "customerSegmentation": "Kundensegmentierung",
+      "columns": {
+        "customer": "Kunde",
+        "type": "Typ",
+        "units": "Einheiten",
+        "monthlyRevenue": "Monatl. Umsatz",
+        "since": "Seit"
+      },
+      "customerTypes": {
+        "business": "Geschäft",
+        "private": "Privat"
+      },
+      "charts": {
+        "newCustomers": "Neue Kunden",
+        "churnedCustomers": "Abgegangen",
+        "customers": "Kunden"
+      },
+      "search": "Kunden suchen..."
+    },
+    "forecast": {
+      "title": "Forecast",
+      "threeMonthForecast": "3-Monats Prognose",
+      "nextThreeMonths": "nächste 3 Monate",
+      "revenueForecast": "3-Monats Umsatzprognose",
+      "forecastStart": "Prognose Start",
+      "vsPreviousYear": "vs. Vorjahr",
+      "priceAdjustments": "Preisanpassungen",
+      "recommended": "empfohlen",
+      "seasonalTrend": "Saisonaler Trend",
+      "stable": "Stabil",
+      "pricingRecommendations": "Preisempfehlungen",
+      "occupied": "belegt",
+      "seasonalTrends": "Saisonale Trends"
+    },
     "unitPerformance": {
       "title": "Unit Performance",
       "analysis": "Analyse der Einheiten-Leistung und Belegung",
@@ -82,6 +125,9 @@
       "revenuePerSqm": "Umsatz pro Quadratmeter",
       "turnoverRate": "Fluktuationsrate",
       "perMonth": "pro Monat",
+      "mostProfitable": "Profitabelste Größe",
+      "leastProfitable": "Am wenigsten profitabel",
+      "unitTurnover": "Einheiten-Fluktuation",
       "columns": {
         "unit": "Einheit",
         "size": "Größe",
@@ -90,23 +136,12 @@
         "avgPrice": "Ø Preis",
         "revenuePerSqm": "€/m²",
         "totalRevenue": "Gesamt"
-      }
-    },
-    "customerAnalytics": {
-      "title": "Customer Analytics",
-      "customerDevelopment": "Kundenentwicklung (12 Monate)",
-      "topCustomers": "Top Kunden nach Umsatz",
-      "churnRate": "Churn Rate",
-      "avgCustomerLifetimeValue": "Ø Customer Lifetime Value",
-      "monthlyRevenue": "Monatl. Umsatz"
-    },
-    "forecast": {
-      "title": "Forecast",
-      "threeMonthForecast": "3-Monats Prognose",
-      "nextThreeMonths": "nächste 3 Monate",
-      "revenueForecast": "3-Monats Umsatzprognose",
-      "forecastStart": "Prognose Start",
-      "vsPreviousYear": "vs. Vorjahr"
+      },
+      "trend": {
+        "above": "Über Durchschnitt",
+        "below": "Unter Durchschnitt"
+      },
+      "search": "Größe suchen..."
     },
     "settings": {
       "title": "Einstellungen",
@@ -174,16 +209,43 @@
   },
   "reports": {
     "monthlyBusinessReport": "Monatlicher Geschäftsbericht",
+    "reportPeriod": "Berichtszeitraum",
+    "createdAt": "Erstellt am",
+    "kpiOverview": "Kennzahlen Übersicht",
     "occupancyRate": "Belegungsrate",
     "monthlyRevenue": "Monatlicher Umsatz",
+    "vsPreviousMonth": "vs. Vormonat",
+    "activeCustomers": "Aktive Kunden",
+    "availableUnits": "Verfügbare Einheiten",
     "avgRentalDuration": "Ø Mietdauer",
+    "months": "Monate",
     "churnRate": "Churn Rate",
-    "occupied": "Belegt",
+    "unitPerformanceBySize": "Einheiten Performance nach Größe",
+    "columns": {
+      "size": "Größe",
+      "total": "Gesamt",
+      "occupied": "Belegt",
+      "occupancy": "Belegung",
+      "avgPrice": "Ø Preis",
+      "revenue": "Umsatz"
+    },
+    "revenueLast3Months": "Umsatz (letzte 3 Monate)",
+    "month": "Monat",
     "revenue": "Umsatz",
+    "occupancy": "Belegung",
+    "customerSegments": "Kundensegmente",
+    "segment": "Segment",
+    "count": "Anzahl",
+    "share": "Anteil",
+    "privateCustomers": "Privatkunden",
+    "businessCustomers": "Geschäftskunden",
+    "summary": "Zusammenfassung",
     "summaryText": "Im Berichtszeitraum wurde ein Gesamtumsatz von {{totalRevenue}} erzielt (letzte 3 Monate). Die durchschnittliche Belegungsrate lag bei {{avgOccupancy}}. Der Umsatz ist im Vergleich zum Vormonat um {{changePercent}}% {{changeDirection}}.",
     "revenueIncreased": "gestiegen",
     "revenueDecreased": "gesunken",
-    "customerLifetimeValue": "Der Customer Lifetime Value beträgt durchschnittlich {{value}}."
+    "customerLifetimeValue": "Der Customer Lifetime Value beträgt durchschnittlich {{value}}.",
+    "confidential": "Vertraulich",
+    "pageOf": "Seite 1 von 1"
   },
   "toast": {
     "saved": "Gespeichert",

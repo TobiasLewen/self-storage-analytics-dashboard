@@ -82,6 +82,9 @@
       "revenuePerSqm": "Revenue per Square Meter",
       "turnoverRate": "Turnover Rate",
       "perMonth": "per month",
+      "mostProfitable": "Most Profitable Size",
+      "leastProfitable": "Least Profitable",
+      "unitTurnover": "Unit Turnover",
       "columns": {
         "unit": "Unit",
         "size": "Size",
@@ -90,7 +93,12 @@
         "avgPrice": "Avg. Price",
         "revenuePerSqm": "€/m²",
         "totalRevenue": "Total"
-      }
+      },
+      "trend": {
+        "above": "Above Average",
+        "below": "Below Average"
+      },
+      "search": "Search sizes..."
     },
     "customerAnalytics": {
       "title": "Customer Analytics",
@@ -98,7 +106,27 @@
       "topCustomers": "Top Customers by Revenue",
       "churnRate": "Churn Rate",
       "avgCustomerLifetimeValue": "Avg. Customer Lifetime Value",
-      "monthlyRevenue": "Monthly Revenue"
+      "monthlyRevenue": "Monthly Revenue",
+      "activeCustomers": "Active Customers",
+      "businessCustomers": "Business Customers",
+      "customerSegmentation": "Customer Segmentation",
+      "columns": {
+        "customer": "Customer",
+        "type": "Type",
+        "units": "Units",
+        "monthlyRevenue": "Monthly Revenue",
+        "since": "Since"
+      },
+      "customerTypes": {
+        "business": "Business",
+        "private": "Private"
+      },
+      "charts": {
+        "newCustomers": "New Customers",
+        "churnedCustomers": "Churned",
+        "customers": "Customers"
+      },
+      "search": "Search customers..."
     },
     "forecast": {
       "title": "Forecast",
@@ -106,7 +134,14 @@
       "nextThreeMonths": "next 3 months",
       "revenueForecast": "3-Month Revenue Forecast",
       "forecastStart": "Forecast Start",
-      "vsPreviousYear": "vs. Previous Year"
+      "vsPreviousYear": "vs. Previous Year",
+      "priceAdjustments": "Price Adjustments",
+      "recommended": "recommended",
+      "seasonalTrend": "Seasonal Trend",
+      "stable": "Stable",
+      "pricingRecommendations": "Pricing Recommendations",
+      "occupied": "occupied",
+      "seasonalTrends": "Seasonal Trends"
     },
     "settings": {
       "title": "Settings",
@@ -174,16 +209,43 @@
   },
   "reports": {
     "monthlyBusinessReport": "Monthly Business Report",
+    "reportPeriod": "Report Period",
+    "createdAt": "Created at",
+    "kpiOverview": "KPI Overview",
     "occupancyRate": "Occupancy Rate",
     "monthlyRevenue": "Monthly Revenue",
+    "vsPreviousMonth": "vs. previous month",
+    "activeCustomers": "Active Customers",
+    "availableUnits": "Available Units",
     "avgRentalDuration": "Avg. Rental Duration",
+    "months": "months",
     "churnRate": "Churn Rate",
-    "occupied": "Occupied",
+    "unitPerformanceBySize": "Unit Performance by Size",
+    "columns": {
+      "size": "Size",
+      "total": "Total",
+      "occupied": "Occupied",
+      "occupancy": "Occupancy",
+      "avgPrice": "Avg. Price",
+      "revenue": "Revenue"
+    },
+    "revenueLast3Months": "Revenue (last 3 months)",
+    "month": "Month",
     "revenue": "Revenue",
+    "occupancy": "Occupancy",
+    "customerSegments": "Customer Segments",
+    "segment": "Segment",
+    "count": "Count",
+    "share": "Share",
+    "privateCustomers": "Private Customers",
+    "businessCustomers": "Business Customers",
+    "summary": "Summary",
     "summaryText": "Total revenue of {{totalRevenue}} was achieved in the reporting period (last 3 months). The average occupancy rate was {{avgOccupancy}}. Revenue {{changeDirection}} by {{changePercent}}% compared to the previous month.",
     "revenueIncreased": "increased",
     "revenueDecreased": "decreased",
-    "customerLifetimeValue": "The average customer lifetime value is {{value}}."
+    "customerLifetimeValue": "The average customer lifetime value is {{value}}.",
+    "confidential": "Confidential",
+    "pageOf": "Page 1 of 1"
   },
   "toast": {
     "saved": "Saved",
